@@ -1,0 +1,67 @@
+{
+  "entities": {
+    "Project": {
+      "title": "Project",
+      "description": "Portfolio project item",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Project title" },
+        "stackType": { "type": "string", "description": "Stack type (e.g. MERN, MENN, Python ML)" },
+        "category": { "type": "string", "description": "Primary category" },
+        "categories": { "type": "array", "description": "Filter categories" },
+        "featured": { "type": "boolean", "description": "Featured on home view" },
+        "status": { "type": "string", "description": "Project status" },
+        "summary": { "type": "string", "description": "High-level summary" },
+        "description": { "type": "array", "description": "Detailed bullet points" },
+        "technologies": { "type": "array", "description": "Technologies used" },
+        "features": { "type": "array", "description": "Core features" },
+        "architecture": { "type": "string", "description": "System architecture explanation" },
+        "githubUrl": { "type": "string", "description": "Source code repository link" },
+        "liveUrl": { "type": "string", "description": "Live deployment link" }
+      },
+      "required": ["title", "summary", "technologies", "category"]
+    },
+    "SkillCategory": {
+      "title": "SkillCategory",
+      "description": "Group of skills in the portfolio",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Category title" },
+        "description": { "type": "string", "description": "Category description" },
+        "iconName": { "type": "string", "description": "Lucide icon name" },
+        "accentColor": { "type": "string", "description": "CSS accent class" },
+        "skills": { "type": "array", "description": "List of skill items" },
+        "order": { "type": "number", "description": "Display order" }
+      },
+      "required": ["title", "skills"]
+    },
+    "ContactMessage": {
+      "title": "ContactMessage",
+      "description": "Messages submitted via portfolio contact form",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Sender full name" },
+        "email": { "type": "string", "description": "Sender email" },
+        "subject": { "type": "string", "description": "Message subject" },
+        "message": { "type": "string", "description": "Message body" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" },
+        "read": { "type": "boolean", "description": "Whether owner has read message" }
+      },
+      "required": ["name", "email", "message"]
+    }
+  },
+  "firestore": {
+    "/projects/{projectId}": {
+      "schema": "Project",
+      "description": "Publicly readable projects; only the portfolio owner (abmueez593@gmail.com) can create, update, or delete"
+    },
+    "/skills/{skillId}": {
+      "schema": "SkillCategory",
+      "description": "Publicly readable skill categories; only the portfolio owner (abmueez593@gmail.com) can create, update, or delete"
+    },
+    "/messages/{messageId}": {
+      "schema": "ContactMessage",
+      "description": "Anyone can create a message; only the portfolio owner (abmueez593@gmail.com) can read, mark read, or delete"
+    }
+  }
+}

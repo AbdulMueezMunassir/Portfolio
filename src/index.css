@@ -1,0 +1,478 @@
+@import "tailwindcss";
+
+@layer base {
+  :root,
+  [data-theme="deep-midnight"] {
+    --bg-canvas: #030712;
+    --bg-surface: #0a0f1d;
+    --bg-card: rgba(15, 23, 42, 0.65);
+    --bg-card-subtle: rgba(15, 23, 42, 0.45);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-accent: rgba(56, 189, 248, 0.35);
+    --accent-glow: rgba(6, 182, 212, 0.15);
+    --accent-border: rgba(56, 189, 248, 0.3);
+    --ambient-1: rgba(8, 47, 73, 0.25);
+    --ambient-2: rgba(49, 46, 129, 0.15);
+    --ambient-3: rgba(6, 182, 212, 0.12);
+    --nav-bg: rgba(3, 7, 18, 0.75);
+    --scrollbar-track: #030712;
+    --scrollbar-thumb: #1e293b;
+    --text-primary: #f1f5f9;
+  }
+
+  [data-theme="slate-blue"] {
+    --bg-canvas: #0b1528;
+    --bg-surface: #111e3b;
+    --bg-card: rgba(22, 36, 68, 0.70);
+    --bg-card-subtle: rgba(22, 36, 68, 0.50);
+    --border-subtle: rgba(147, 197, 253, 0.14);
+    --border-accent: rgba(96, 165, 250, 0.45);
+    --accent-glow: rgba(59, 130, 246, 0.22);
+    --accent-border: rgba(96, 165, 250, 0.4);
+    --ambient-1: rgba(30, 58, 138, 0.38);
+    --ambient-2: rgba(67, 56, 202, 0.24);
+    --ambient-3: rgba(14, 165, 233, 0.22);
+    --nav-bg: rgba(11, 21, 40, 0.82);
+    --scrollbar-track: #0b1528;
+    --scrollbar-thumb: #23385d;
+    --text-primary: #f8fafc;
+  }
+
+  [data-theme="clean-light"] {
+    --bg-canvas: #f8fafc;
+    --bg-surface: #ffffff;
+    --bg-card: rgba(255, 255, 255, 0.88);
+    --bg-card-subtle: rgba(255, 255, 255, 0.72);
+    --border-subtle: rgba(15, 23, 42, 0.08);
+    --border-accent: rgba(14, 165, 233, 0.45);
+    --accent-glow: rgba(14, 165, 233, 0.18);
+    --accent-border: rgba(14, 165, 233, 0.40);
+    --ambient-1: rgba(56, 189, 248, 0.28);
+    --ambient-2: rgba(99, 102, 241, 0.20);
+    --ambient-3: rgba(6, 182, 212, 0.22);
+    --nav-bg: rgba(255, 255, 255, 0.88);
+    --scrollbar-track: #f1f5f9;
+    --scrollbar-thumb: #cbd5e1;
+    --text-primary: #0f172a;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+
+  body {
+    overflow-x: hidden;
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3b82f6;
+  }
+}
+
+/* Glassmorphism primitives */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.glass-panel-subtle {
+  background: var(--bg-card-subtle);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.glass-nav {
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.glass-card-interactive {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+}
+
+.glass-card-interactive:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-accent);
+  box-shadow: 0 20px 35px -10px var(--accent-glow), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+}
+
+/* Subtle glowing backdrop orbs */
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(30px, -20px) scale(1.05);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 12s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 6s ease-in-out infinite;
+}
+
+/* Animated Ambient Glow Orbs */
+@keyframes ambientOrb1 {
+  0%, 100% {
+    transform: translate(-50%, 0px) scale(1);
+  }
+  35% {
+    transform: translate(-46%, 45px) scale(1.1);
+  }
+  70% {
+    transform: translate(-54%, -35px) scale(0.94);
+  }
+}
+
+@keyframes ambientOrb2 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  40% {
+    transform: translate(-55px, 60px) scale(1.14);
+  }
+  75% {
+    transform: translate(35px, -35px) scale(0.92);
+  }
+}
+
+@keyframes ambientOrb3 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  45% {
+    transform: translate(65px, -50px) scale(1.12);
+  }
+  80% {
+    transform: translate(-40px, 40px) scale(0.95);
+  }
+}
+
+@keyframes ambientOrb4 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(-45px, -45px) scale(1.15);
+  }
+}
+
+@keyframes particleDrift {
+  0% {
+    transform: translateY(0) scale(0.85);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translateY(-50px) scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-110px) scale(0.9);
+    opacity: 0.15;
+  }
+}
+
+.animate-ambient-orb-1 {
+  animation: ambientOrb1 18s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-ambient-orb-2 {
+  animation: ambientOrb2 22s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-ambient-orb-3 {
+  animation: ambientOrb3 26s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-ambient-orb-4 {
+  animation: ambientOrb4 20s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-particle-drift {
+  animation: particleDrift 14s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+/* Subtle cyber data stream beam animations */
+@keyframes beamTravel {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.6;
+  }
+  80% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(300%);
+    opacity: 0;
+  }
+}
+
+.animate-cyber-beam-1 {
+  animation: beamTravel 11s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform, opacity;
+}
+
+.animate-cyber-beam-2 {
+  animation: beamTravel 15s cubic-bezier(0.4, 0, 0.2, 1) infinite 5s;
+  will-change: transform, opacity;
+}
+
+.animate-cyber-beam-3 {
+  animation: beamTravel 19s cubic-bezier(0.4, 0, 0.2, 1) infinite 10s;
+  will-change: transform, opacity;
+}
+
+/* Light theme comprehensive overrides for high contrast and readability */
+[data-theme="clean-light"] {
+  color-scheme: light;
+}
+
+[data-theme="clean-light"] body,
+[data-theme="clean-light"] main {
+  color: #0f172a;
+}
+
+/* Headings in light mode */
+[data-theme="clean-light"] h1:not(.text-transparent),
+[data-theme="clean-light"] h2:not(.text-transparent),
+[data-theme="clean-light"] h3:not(.text-transparent),
+[data-theme="clean-light"] h4:not(.text-transparent),
+[data-theme="clean-light"] h5:not(.text-transparent) {
+  color: #0f172a !important;
+}
+
+/* Ensure gradient text clips properly */
+[data-theme="clean-light"] .bg-clip-text {
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Text tone adjustments */
+[data-theme="clean-light"] .text-slate-100,
+[data-theme="clean-light"] .text-slate-200 {
+  color: #1e293b !important;
+}
+
+[data-theme="clean-light"] .text-slate-300,
+[data-theme="clean-light"] .text-slate-300\/90 {
+  color: #334155 !important;
+}
+
+[data-theme="clean-light"] .text-slate-400 {
+  color: #64748b !important;
+}
+
+/* In light mode, override .text-white when NOT inside buttons with colored background */
+[data-theme="clean-light"] p.text-white,
+[data-theme="clean-light"] span.text-white,
+[data-theme="clean-light"] strong.text-white {
+  color: #0f172a !important;
+}
+
+/* Glass Panels & Cards in Light Mode */
+[data-theme="clean-light"] .glass-panel {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04) !important;
+}
+
+[data-theme="clean-light"] .glass-panel-subtle {
+  background: rgba(255, 255, 255, 0.75) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04) !important;
+}
+
+[data-theme="clean-light"] .glass-nav {
+  background: rgba(255, 255, 255, 0.90) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-theme="clean-light"] .glass-card-interactive {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="clean-light"] .glass-card-interactive:hover {
+  transform: translateY(-4px);
+  border-color: rgba(14, 165, 233, 0.45) !important;
+  box-shadow: 0 16px 32px -8px rgba(14, 165, 233, 0.18), 0 4px 8px -2px rgba(15, 23, 42, 0.04) !important;
+}
+
+/* Background cards that have bg-slate-900 / bg-slate-800 */
+[data-theme="clean-light"] .bg-slate-900\/60,
+[data-theme="clean-light"] .bg-slate-900\/70,
+[data-theme="clean-light"] .bg-slate-900\/80,
+[data-theme="clean-light"] .bg-slate-900\/90,
+[data-theme="clean-light"] .bg-slate-900\/50,
+[data-theme="clean-light"] .bg-slate-900\/40,
+[data-theme="clean-light"] .bg-slate-900\/30,
+[data-theme="clean-light"] .bg-slate-900 {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+}
+
+[data-theme="clean-light"] .bg-slate-800\/80,
+[data-theme="clean-light"] .bg-slate-800\/90,
+[data-theme="clean-light"] .bg-slate-800\/60,
+[data-theme="clean-light"] .bg-slate-800 {
+  background-color: #f1f5f9 !important;
+  color: #1e293b !important;
+}
+
+[data-theme="clean-light"] .bg-slate-950\/60,
+[data-theme="clean-light"] .bg-slate-950\/80,
+[data-theme="clean-light"] .bg-slate-950\/50,
+[data-theme="clean-light"] .bg-slate-950 {
+  background-color: #ffffff !important;
+}
+
+[data-theme="clean-light"] footer {
+  background-color: rgba(255, 255, 255, 0.88) !important;
+  border-top-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="clean-light"] .border-white\/10,
+[data-theme="clean-light"] .border-white\/5,
+[data-theme="clean-light"] .border-white\/15,
+[data-theme="clean-light"] .border-white\/20 {
+  border-color: rgba(15, 23, 42, 0.10) !important;
+}
+
+/* Form inputs & textareas in light mode */
+[data-theme="clean-light"] input,
+[data-theme="clean-light"] textarea,
+[data-theme="clean-light"] select {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+[data-theme="clean-light"] input::placeholder,
+[data-theme="clean-light"] textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Modal Backdrops in light mode */
+[data-theme="clean-light"] .fixed.inset-0.bg-slate-950\/80,
+[data-theme="clean-light"] .fixed.inset-0[class*="bg-slate-950"] {
+  background-color: rgba(15, 23, 42, 0.45) !important;
+}
+
+/* Print Styles for CV Download */
+@media print {
+  @page {
+    margin: 12mm 15mm;
+    size: A4 portrait;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  /* When CV modal is open for printing, hide page background elements */
+  body.cv-modal-open header,
+  body.cv-modal-open main,
+  body.cv-modal-open footer {
+    display: none !important;
+  }
+
+  body.cv-modal-open .cv-modal-wrapper {
+    position: static !important;
+    inset: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  body.cv-modal-open .cv-modal-container {
+    position: static !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  .cv-document {
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  .glass-panel,
+  .glass-card-interactive,
+  .glass-panel-subtle {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    color: #0f172a !important;
+  }
+}

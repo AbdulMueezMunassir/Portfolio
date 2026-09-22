@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner() {
+      return isAuthenticated() && (
+        request.auth.token.email == 'abmueez593@gmail.com'
+      );
+    }
+
+    // Projects: Public read, only owner can add, edit, or delete
+    match /projects/{projectId} {
+      allow read: if true;
+      allow create, update, delete: if isOwner();
+    }
+
+    // Skills: Public read, only owner can add, edit, or delete
+    match /skills/{skillId} {
+      allow read: if true;
+      allow create, update, delete: if isOwner();
+    }
+
+    // Messages: Visitors can submit messages, only owner can view, update read status, or delete
+    match /messages/{messageId} {
+      allow create: if request.resource.data.name is string &&
+                       request.resource.data.email is string &&
+                       request.resource.data.message is string;
+      allow read, update, delete: if isOwner();
+    }
+
+    // Connection test document
+    match /test/{testId} {
+      allow read, write: if true;
+    }
+  }
+}
