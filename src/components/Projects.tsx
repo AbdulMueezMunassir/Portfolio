@@ -319,9 +319,11 @@ export const Projects: React.FC = () => {
       {/* Background project-relevant tech infrastructure imagery */}
       <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden select-none">
         <img
-          src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=2000&q=80"
+          src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=70"
           alt="Cloud server architecture and database systems"
           referrerPolicy="no-referrer"
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover object-top opacity-[0.08] dark:opacity-[0.12] filter contrast-125 transition-opacity duration-700"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[var(--bg-canvas)] via-transparent to-[var(--bg-canvas)]" />

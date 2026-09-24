@@ -52,7 +52,7 @@ export const About: React.FC = () => {
   ];
 
   return (
-    <section id="about" className="py-20 relative">
+    <section id="about" className="py-20 relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         
         {/* Section Header */}

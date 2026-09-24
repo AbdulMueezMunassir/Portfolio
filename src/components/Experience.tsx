@@ -12,7 +12,7 @@ import { EXPERIENCES, EDUCATION } from '../data';
 
 export const Experience: React.FC = () => {
   return (
-    <section id="experience" className="py-20 relative">
+    <section id="experience" className="py-20 relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">

@@ -107,7 +107,7 @@ export const Contact: React.FC = () => {
   };
 
   return (
-    <section id="contact" className="py-20 relative">
+    <section id="contact" className="py-20 relative overflow-hidden">
       {/* Background radial glow */}
       <div className="absolute bottom-10 left-1/3 w-[450px] h-[450px] bg-cyan-500/10 rounded-full blur-[160px] pointer-events-none -z-10" />
 

@@ -26,7 +26,7 @@ export const googleProvider = new GoogleAuthProvider();
 
 export const OWNER_EMAIL = 'abmueez593@gmail.com';
 
-// Test connection on boot per Firebase skill guidelines
+// Test connection deferred so it never blocks page boot or initial paint
 export async function testConnection() {
   try {
     await getDocFromServer(doc(db, 'test', 'connection'));
@@ -37,4 +37,12 @@ export async function testConnection() {
   }
 }
 
-testConnection();
+if (typeof window !== 'undefined') {
+  if ('requestIdleCallback' in window) {
+    (window as any).requestIdleCallback(() => {
+      testConnection();
+    });
+  } else {
+    setTimeout(testConnection, 2000);
+  }
+}

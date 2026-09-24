@@ -133,7 +133,7 @@ export const Skills: React.FC = () => {
   const totalSkillsCount = skills.reduce((acc, cat) => acc + cat.skills.length, 0);
 
   return (
-    <section id="skills" className="py-20 sm:py-28 relative">
+    <section id="skills" className="py-20 sm:py-28 relative overflow-hidden">
       {/* Glow ambient background lights */}
       <div className="absolute top-1/4 right-1/4 w-[450px] h-[450px] bg-blue-600/10 rounded-full blur-[160px] pointer-events-none -z-10" />
       <div className="absolute bottom-1/3 left-1/4 w-[400px] h-[400px] bg-cyan-600/10 rounded-full blur-[150px] pointer-events-none -z-10" />

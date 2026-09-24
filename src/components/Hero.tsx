@@ -33,13 +33,15 @@ export const Hero: React.FC<HeroProps> = ({ onOpenCv, avatarUrl }) => {
   const currentAvatar = avatarUrl || PERSONAL_INFO.avatarUrl || '/avatar.png';
 
   return (
-    <section id="hero" className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden">
+    <section id="hero" className="relative pt-28 sm:pt-32 md:pt-36 pb-16 md:pb-24 overflow-hidden">
       {/* Background project-relevant circuit & tech infrastructure imagery */}
       <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden select-none">
         <img
-          src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=2000&q=80"
+          src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=70"
           alt="Computing hardware architecture and digital circuit grid"
           referrerPolicy="no-referrer"
+          decoding="async"
+          loading="lazy"
           className="w-full h-full object-cover object-center opacity-[0.06] dark:opacity-[0.10] filter contrast-125 transition-opacity duration-700"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[var(--bg-canvas)] via-transparent to-[var(--bg-canvas)]" />
@@ -68,12 +70,12 @@ export const Hero: React.FC<HeroProps> = ({ onOpenCv, avatarUrl }) => {
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight break-words">
               Abdul <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-500">Mueez</span>
             </h1>
 
             {/* Sub-headline */}
-            <p className="mt-3 text-lg sm:text-xl md:text-2xl font-semibold text-slate-300 flex items-center gap-2">
+            <p className="mt-3 text-base sm:text-xl md:text-2xl font-semibold text-slate-300 flex flex-wrap items-center gap-1.5 sm:gap-2">
               <span>Junior Software Engineer</span>
               <span className="text-cyan-400">/</span>
               <span className="text-slate-400 font-normal">Full-Stack Developer</span>

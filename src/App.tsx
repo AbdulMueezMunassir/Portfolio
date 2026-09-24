@@ -7,7 +7,6 @@ import { Skills } from './components/Skills';
 import { Experience } from './components/Experience';
 import { Contact } from './components/Contact';
 import { Footer } from './components/Footer';
-import { CvModal } from './components/CvModal';
 import { PERSONAL_INFO } from './data';
 import { AuthProvider } from './context/AuthContext';
 import { PortfolioDataProvider } from './context/PortfolioDataContext';
@@ -16,6 +15,11 @@ import { BackToTop } from './components/BackToTop';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { ThemeMode } from './types';
 export type { ThemeMode };
+
+// Lazy load heavy PDF/Canvas CV Modal to reduce initial bundle size and load time
+const CvModal = React.lazy(() =>
+  import('./components/CvModal').then((mod) => ({ default: mod.CvModal }))
+);
 
 function PortfolioApp() {
   const [isCvOpen, setIsCvOpen] = useState(false);
@@ -91,12 +95,16 @@ function PortfolioApp() {
         avatarUrl={avatarUrl}
       />
 
-      {/* Interactive CV Modal (Printable & Copyable) */}
-      <CvModal
-        isOpen={isCvOpen}
-        onClose={() => setIsCvOpen(false)}
-        avatarUrl={avatarUrl}
-      />
+      {/* Interactive CV Modal (Printable & Copyable, loaded on-demand) */}
+      <React.Suspense fallback={null}>
+        {isCvOpen && (
+          <CvModal
+            isOpen={isCvOpen}
+            onClose={() => setIsCvOpen(false)}
+            avatarUrl={avatarUrl}
+          />
+        )}
+      </React.Suspense>
 
       {/* Floating Back to Top Button */}
       <BackToTop />

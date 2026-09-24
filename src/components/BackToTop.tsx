@@ -55,7 +55,7 @@ export const BackToTop: React.FC = () => {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.7, y: 20 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-40 group flex items-center justify-center w-12 h-12 rounded-full glass-panel border border-cyan-500/30 hover:border-cyan-400 text-cyan-400 hover:text-cyan-200 shadow-xl shadow-cyan-950/40 hover:shadow-cyan-500/25 hover:scale-110 active:scale-95 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-400/50 cursor-pointer"
+          className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-40 group flex items-center justify-center w-12 h-12 rounded-full glass-panel border border-cyan-500/30 hover:border-cyan-400 text-cyan-400 hover:text-cyan-200 shadow-xl shadow-cyan-950/40 hover:shadow-cyan-500/25 hover:scale-110 active:scale-95 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-400/50 cursor-pointer"
         >
           {/* Circular SVG Scroll Progress Ring */}
           <svg

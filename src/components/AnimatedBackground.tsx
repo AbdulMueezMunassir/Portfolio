@@ -63,14 +63,18 @@ export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme })
     window.addEventListener('touchmove', handlePointerMove, { passive: true });
     window.addEventListener('mouseleave', handlePointerLeave);
 
+    let resizeTimer: number;
     const handleResize = () => {
       if (!canvas) return;
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-      initParticles();
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        initParticles();
+      }, 150);
     };
 
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResize, { passive: true });
 
     // Color palettes based on theme
     const getThemeColors = () => {
@@ -79,7 +83,7 @@ export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme })
           nodes: ['#0284c7', '#0369a1', '#6366f1', '#0ea5e9'],
           lineRgb: '14, 165, 233',
           mouseLineRgb: '2, 132, 199',
-          maxDistance: 120,
+          maxDistance: 110,
           opacityMultiplier: 0.35,
         };
       }
@@ -88,7 +92,7 @@ export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme })
           nodes: ['#818cf8', '#a855f7', '#38bdf8', '#c084fc'],
           lineRgb: '168, 85, 247',
           mouseLineRgb: '129, 140, 248',
-          maxDistance: 130,
+          maxDistance: 120,
           opacityMultiplier: 0.4,
         };
       }
@@ -97,7 +101,7 @@ export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme })
         nodes: ['#22d3ee', '#38bdf8', '#34d399', '#06b6d4'],
         lineRgb: '34, 211, 238',
         mouseLineRgb: '56, 189, 248',
-        maxDistance: 135,
+        maxDistance: 120,
         opacityMultiplier: 0.45,
       };
     };
@@ -106,8 +110,8 @@ export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme })
 
     const initParticles = () => {
       particles = [];
-      // Dynamic count based on viewport width: ~48 on desktop, ~22 on mobile for optimal performance
-      const count = width < 768 ? 22 : Math.min(Math.floor(width / 32), 48);
+      // Dynamic count based on viewport width: ~30 on desktop, ~16 on mobile for 60fps performance
+      const count = width < 768 ? 16 : Math.min(Math.floor(width / 42), 32);
       const palette = getThemeColors();
 
       for (let i = 0; i < count; i++) {
@@ -230,9 +234,11 @@ export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme })
       {/* 0. Software Engineering & Global Cloud Architecture Background Layer */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none transition-opacity duration-1000">
         <img
-          src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=2160&q=80"
+          src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=70"
           alt="Abstract software engineering and distributed cloud network infrastructure"
           referrerPolicy="no-referrer"
+          loading="lazy"
+          decoding="async"
           className={`w-full h-full object-cover object-center scale-105 transition-all duration-1000 ${
             isLight
               ? 'opacity-[0.06] mix-blend-multiply filter contrast-125 grayscale'

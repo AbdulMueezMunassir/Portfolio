@@ -41,63 +41,64 @@ export const Navbar: React.FC<NavbarProps> = ({
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-4 sm:px-6 py-4">
-      <div
-        className={`max-w-6xl mx-auto rounded-2xl transition-all duration-300 ${
-          scrolled
-            ? 'glass-nav py-3 px-5 shadow-2xl shadow-cyan-950/20'
-            : 'bg-slate-900/40 backdrop-blur-md border border-white/5 py-3.5 px-6'
-        }`}
-      >
-        <div className="flex items-center justify-between">
-          {/* Logo & Name */}
-          <a
-            href="#hero"
-            className="flex items-center gap-3 group focus:outline-none"
-            id="nav-logo-btn"
-          >
-            {/* Header Profile Image - Resized & Clearly Visible */}
-            <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-2xl overflow-hidden border-2 border-cyan-400/60 p-0.5 flex items-center justify-center bg-slate-900 shadow-lg shadow-cyan-500/20 group-hover:scale-105 group-hover:border-cyan-300 transition-all duration-300 relative shrink-0">
-              <img
-                src={avatarUrl || PERSONAL_INFO.avatarUrl}
-                alt="Abdul Mueez"
-                className="w-full h-full object-cover object-top rounded-[14px]"
-                onError={(e) => {
-                  const target = e.currentTarget;
-                  if (target.src !== 'https://github.com/AbdulMueezMunassir.png') {
-                    target.src = 'https://github.com/AbdulMueezMunassir.png';
-                  }
-                }}
-              />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-sm sm:text-base text-slate-100 tracking-tight group-hover:text-cyan-300 transition-colors leading-tight">
-                  {PERSONAL_INFO.name}
-                </span>
-                <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" title="Available for hire" />
+    <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 pointer-events-none">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-3 sm:pt-4">
+        <div
+          className={`pointer-events-auto w-full rounded-2xl transition-all duration-300 ${
+            scrolled
+              ? 'glass-nav py-2.5 sm:py-3 px-3.5 sm:px-5 shadow-2xl shadow-cyan-950/20'
+              : 'bg-slate-900/50 backdrop-blur-md border border-white/10 py-2.5 sm:py-3 px-3.5 sm:px-5 shadow-lg'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            {/* Logo & Name */}
+            <a
+              href="#hero"
+              className="flex items-center gap-2.5 sm:gap-3 group focus:outline-none shrink-0"
+              id="nav-logo-btn"
+            >
+              {/* Header Profile Image */}
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl overflow-hidden border-2 border-cyan-400/60 p-0.5 flex items-center justify-center bg-slate-900 shadow-lg shadow-cyan-500/20 group-hover:scale-105 group-hover:border-cyan-300 transition-all duration-300 relative shrink-0">
+                <img
+                  src={avatarUrl || PERSONAL_INFO.avatarUrl}
+                  alt="Abdul Mueez"
+                  className="w-full h-full object-cover object-top rounded-[10px] sm:rounded-[12px]"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (target.src !== 'https://github.com/AbdulMueezMunassir.png') {
+                      target.src = 'https://github.com/AbdulMueezMunassir.png';
+                    }
+                  }}
+                />
               </div>
-              <p className="text-[11px] text-slate-400 font-medium hidden sm:block leading-tight mt-0.5">
-                Junior Software Engineer
-              </p>
-            </div>
-          </a>
+              <div className="flex flex-col justify-center">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-sm sm:text-base text-slate-100 tracking-tight group-hover:text-cyan-300 transition-colors leading-tight whitespace-nowrap">
+                    {PERSONAL_INFO.name}
+                  </span>
+                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" title="Available for hire" />
+                </div>
+                <p className="text-[11px] text-slate-400 font-medium hidden sm:block leading-tight mt-0.5 whitespace-nowrap">
+                  Junior Software Engineer
+                </p>
+              </div>
+            </a>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1 lg:gap-2">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="px-3 py-1.5 rounded-lg text-sm text-slate-300 hover:text-cyan-300 hover:bg-white/5 transition-all duration-200"
-              >
-                {link.name}
-              </a>
-            ))}
-          </nav>
+            {/* Desktop Navigation Links */}
+            <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1.5 mx-2">
+              {navLinks.map((link) => (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  className="px-2.5 py-1.5 rounded-lg text-xs xl:text-sm text-slate-300 hover:text-cyan-300 hover:bg-white/5 transition-all duration-200 whitespace-nowrap font-medium"
+                >
+                  {link.name}
+                </a>
+              ))}
+            </nav>
 
           {/* Action CTAs */}
-          <div className="hidden sm:flex items-center gap-2">
+          <div className="hidden lg:flex items-center gap-2 shrink-0">
             {/* Theme Selector Pill: Light Theme with Sun & Golden Amber Glow */}
             <div className="flex items-center p-0.5 rounded-xl bg-slate-800/80 border border-white/10 shadow-sm gap-1">
               <button
@@ -179,11 +180,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               target="_blank"
               rel="noreferrer"
               id="nav-linkedin-button"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-[#0A66C2]/20 border border-white/10 hover:border-[#0A66C2]/60 text-xs font-semibold text-slate-200 hover:text-white transition-all shadow-sm group"
+              className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-[#0A66C2]/20 border border-white/10 hover:border-[#0A66C2]/60 text-xs font-semibold text-slate-200 hover:text-white transition-all shadow-sm group whitespace-nowrap"
               title="LinkedIn Profile"
             >
               <Linkedin className="w-3.5 h-3.5 text-[#0A66C2] group-hover:scale-110 transition-transform" />
-              <span className="hidden lg:inline">LinkedIn</span>
+              <span>LinkedIn</span>
             </a>
 
             <button
@@ -205,8 +206,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             </a>
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="flex sm:hidden items-center gap-1.5">
+          {/* Mobile & Tablet Controls (< lg) */}
+          <div className="flex lg:hidden items-center gap-1.5 shrink-0">
             <button
               onClick={onToggleTheme}
               id="mobile-header-theme-toggle-btn"
@@ -233,9 +234,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Mobile Dropdown */}
+        {/* Mobile & Tablet Dropdown (< lg) */}
         {mobileMenuOpen && (
-          <div className="md:hidden mt-4 pt-4 border-t border-white/10 space-y-2 pb-2">
+          <div className="lg:hidden mt-3 pt-3 border-t border-white/10 space-y-2 pb-2 max-h-[calc(100vh-6rem)] overflow-y-auto">
             <div className="grid grid-cols-2 gap-1.5">
               {navLinks.map((link) => (
                 <a
@@ -377,6 +378,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
         )}
+        </div>
       </div>
     </header>
   );
