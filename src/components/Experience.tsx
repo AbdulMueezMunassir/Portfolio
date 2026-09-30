@@ -24,7 +24,7 @@ export const Experience: React.FC = () => {
               <span>Industry Experience</span>
             </div>
             <h2 className="text-3xl font-extrabold text-white tracking-tight mb-8">
-              Professional <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Journey</span>
+              Professional <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-700 to-blue-700 dark:from-cyan-400 dark:to-blue-400">Journey</span>
             </h2>
 
             <div className="space-y-6">
@@ -95,7 +95,7 @@ export const Experience: React.FC = () => {
               <span>Academic Background</span>
             </div>
             <h2 className="text-3xl font-extrabold text-white tracking-tight mb-8">
-              Education & <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Degrees</span>
+              Education & <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-700 to-indigo-700 dark:from-blue-400 dark:to-indigo-400">Degrees</span>
             </h2>
 
             <div className="space-y-6">

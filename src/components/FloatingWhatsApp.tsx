@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MessageCircle, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { PERSONAL_INFO } from '../data';
+import { WhatsAppIcon } from './WhatsAppIcon.tsx';
 
 export const FloatingWhatsApp: React.FC = () => {
   const [showTooltip, setShowTooltip] = useState(false);
@@ -65,7 +66,7 @@ export const FloatingWhatsApp: React.FC = () => {
           animate={isPopping ? { scale: [1, 0.85, 1.2, 1] } : { scale: 1 }}
           transition={{ duration: 0.35 }}
         >
-          <MessageCircle className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" />
+          <WhatsAppIcon className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" />
         </motion.div>
 
         {/* Online Status Indicator */}

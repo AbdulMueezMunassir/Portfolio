@@ -265,7 +265,7 @@ export const AiToolsShowcase: React.FC = () => {
           >
             {/* Ambient subtle gradient wash */}
             <div
-              className={`absolute inset-0 bg-gradient-to-br ${tool.accentBg} pointer-events-none opacity-40 group-hover:opacity-80 transition-opacity duration-300`}
+              className={`absolute inset-0 bg-linear-to-br ${tool.accentBg} pointer-events-none opacity-40 group-hover:opacity-80 transition-opacity duration-300`}
             />
 
             <div className="relative z-10">
@@ -339,7 +339,7 @@ export const AiToolsShowcase: React.FC = () => {
       </div>
 
       {/* Engineering Velocity Summary Banner */}
-      <div className="mt-5 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-purple-950/40 via-slate-900/60 to-cyan-950/40 border border-purple-500/20 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+      <div className="mt-5 p-4 sm:p-5 rounded-2xl bg-linear-to-r from-purple-950/40 via-slate-900/60 to-cyan-950/40 border border-purple-500/20 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-300 shrink-0">
             <Workflow className="w-5 h-5" />

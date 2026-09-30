@@ -20,7 +20,6 @@ interface Particle {
 export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isLight = theme === 'clean-light';
-  const isSlateBlue = theme === 'slate-blue';
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -87,15 +86,6 @@ export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme })
           opacityMultiplier: 0.35,
         };
       }
-      if (isSlateBlue) {
-        return {
-          nodes: ['#818cf8', '#a855f7', '#38bdf8', '#c084fc'],
-          lineRgb: '168, 85, 247',
-          mouseLineRgb: '129, 140, 248',
-          maxDistance: 120,
-          opacityMultiplier: 0.4,
-        };
-      }
       // deep-midnight
       return {
         nodes: ['#22d3ee', '#38bdf8', '#34d399', '#06b6d4'],
@@ -107,6 +97,7 @@ export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme })
     };
 
     let particles: Particle[] = [];
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const initParticles = () => {
       particles = [];
@@ -129,12 +120,55 @@ export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme })
       }
     };
 
+    const drawAtom = (time: number, lineRgb: string, colors: string[]) => {
+      const centerX = width * 0.78;
+      const centerY = height * 0.74;
+      const orbitWidth = Math.min(width * 0.15, 100);
+      const orbitHeight = orbitWidth * 0.42;
+      const phase = prefersReducedMotion ? 0 : time * 0.00045;
+      const rotations = [0, Math.PI / 3, -Math.PI / 3];
+
+      ctx.save();
+      ctx.translate(centerX, centerY);
+
+      rotations.forEach((rotation, index) => {
+        ctx.save();
+        ctx.rotate(rotation);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, orbitWidth, orbitHeight, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(${lineRgb}, ${isLight ? 0.16 : 0.14})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        const direction = index === 1 ? -1 : 1;
+        const angle = phase * direction + (index * Math.PI * 2) / 3;
+        ctx.beginPath();
+        ctx.arc(Math.cos(angle) * orbitWidth, Math.sin(angle) * orbitHeight, 2.4, 0, Math.PI * 2);
+        ctx.fillStyle = colors[index % colors.length];
+        ctx.shadowColor = colors[index % colors.length];
+        ctx.shadowBlur = 8;
+        ctx.globalAlpha = isLight ? 0.7 : 0.85;
+        ctx.fill();
+        ctx.restore();
+      });
+
+      ctx.beginPath();
+      ctx.arc(0, 0, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = colors[0];
+      ctx.shadowColor = colors[0];
+      ctx.shadowBlur = 10;
+      ctx.globalAlpha = isLight ? 0.5 : 0.65;
+      ctx.fill();
+      ctx.restore();
+    };
+
     initParticles();
 
     // Render loop
     const render = () => {
       ctx.clearRect(0, 0, width, height);
       const config = getThemeColors();
+      drawAtom(performance.now(), config.lineRgb, config.nodes);
 
       // Update and draw particles
       for (let i = 0; i < particles.length; i++) {
@@ -200,16 +234,18 @@ export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme })
       }
 
       ctx.globalAlpha = 1;
-      animationFrameId = requestAnimationFrame(render);
+      if (!prefersReducedMotion && !document.hidden) {
+        animationFrameId = requestAnimationFrame(render);
+      }
     };
 
-    animationFrameId = requestAnimationFrame(render);
+    render();
 
     // Pause when tab is not visible to conserve battery
     const handleVisibilityChange = () => {
       if (document.hidden) {
         cancelAnimationFrame(animationFrameId);
-      } else {
+      } else if (!prefersReducedMotion) {
         animationFrameId = requestAnimationFrame(render);
       }
     };
@@ -224,7 +260,7 @@ export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme })
       window.removeEventListener('resize', handleResize);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isLight, isSlateBlue]);
+  }, [isLight]);
 
   return (
     <div
@@ -249,8 +285,8 @@ export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme })
         <div
           className={`absolute inset-0 transition-colors duration-700 ${
             isLight
-              ? 'bg-gradient-to-b from-slate-50/75 via-transparent to-slate-50/90'
-              : 'bg-gradient-to-b from-slate-950/65 via-transparent to-slate-950/85'
+              ? 'bg-linear-to-b from-slate-50/75 via-transparent to-slate-50/90'
+              : 'bg-linear-to-b from-slate-950/65 via-transparent to-slate-950/85'
           }`}
         />
       </div>
@@ -270,15 +306,15 @@ export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme })
       {/* 2. Cyber Data Streams / Horizontal Light Pulses */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
         <div
-          className="absolute top-[22%] left-0 w-[40vw] h-[1px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-cyber-beam-1"
+          className="absolute top-[22%] left-0 w-[40vw] h-px bg-linear-to-r from-transparent via-cyan-400 to-transparent animate-cyber-beam-1"
           style={{ opacity: isLight ? 0.25 : 0.4 }}
         />
         <div
-          className="absolute top-[58%] left-0 w-[50vw] h-[1px] bg-gradient-to-r from-transparent via-indigo-400 to-transparent animate-cyber-beam-2"
+          className="absolute top-[58%] left-0 w-[50vw] h-px bg-linear-to-r from-transparent via-indigo-400 to-transparent animate-cyber-beam-2"
           style={{ opacity: isLight ? 0.2 : 0.35 }}
         />
         <div
-          className="absolute top-[84%] left-0 w-[35vw] h-[1px] bg-gradient-to-r from-transparent via-sky-400 to-transparent animate-cyber-beam-3"
+          className="absolute top-[84%] left-0 w-[35vw] h-px bg-linear-to-r from-transparent via-sky-400 to-transparent animate-cyber-beam-3"
           style={{ opacity: isLight ? 0.25 : 0.4 }}
         />
       </div>
@@ -287,7 +323,7 @@ export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme })
       <div className="relative w-full h-full">
         {/* Orb 1: Primary Top-Center Ambient Glow */}
         <div
-          className="absolute top-[-5%] left-1/2 -translate-x-1/2 w-[850px] h-[550px] rounded-full blur-[140px] opacity-80 animate-ambient-orb-1 transition-all duration-700"
+          className="absolute top-[-5%] left-1/2 -translate-x-1/2 w-212.5 h-137.5 rounded-full blur-[140px] opacity-80 animate-ambient-orb-1 transition-all duration-700"
           style={{
             background: isLight
               ? 'radial-gradient(circle, rgba(251, 191, 36, 0.20) 0%, rgba(56, 189, 248, 0.30) 40%, rgba(14, 165, 233, 0.14) 65%, transparent 75%)'
@@ -297,7 +333,7 @@ export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme })
 
         {/* Orb 2: Top-Right Sapphire / Indigo Floating Orb */}
         <div
-          className="absolute top-[18%] right-[-5%] w-[650px] h-[650px] rounded-full blur-[160px] opacity-75 animate-ambient-orb-2 transition-all duration-700"
+          className="absolute top-[18%] right-[-5%] w-162.5 h-162.5 rounded-full blur-[160px] opacity-75 animate-ambient-orb-2 transition-all duration-700"
           style={{
             background: isLight
               ? 'radial-gradient(circle, rgba(129, 140, 248, 0.25) 0%, rgba(99, 102, 241, 0.12) 50%, transparent 70%)'
@@ -307,7 +343,7 @@ export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme })
 
         {/* Orb 3: Mid-Left Cyan Floating Orb */}
         <div
-          className="absolute top-[48%] left-[-8%] w-[680px] h-[680px] rounded-full blur-[170px] opacity-75 animate-ambient-orb-3 transition-all duration-700"
+          className="absolute top-[48%] left-[-8%] w-170 h-170 rounded-full blur-[170px] opacity-75 animate-ambient-orb-3 transition-all duration-700"
           style={{
             background: isLight
               ? 'radial-gradient(circle, rgba(45, 212, 191, 0.26) 0%, rgba(6, 182, 212, 0.14) 50%, transparent 70%)'
@@ -317,7 +353,7 @@ export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme })
 
         {/* Orb 4: Bottom-Right Violet Warm Accent Orb */}
         <div
-          className="absolute bottom-[10%] right-[10%] w-[600px] h-[600px] rounded-full blur-[150px] opacity-70 animate-ambient-orb-4 transition-all duration-700"
+          className="absolute bottom-[10%] right-[10%] w-150 h-150 rounded-full blur-[150px] opacity-70 animate-ambient-orb-4 transition-all duration-700"
           style={{
             background: isLight
               ? 'radial-gradient(circle, rgba(244, 114, 182, 0.18) 0%, rgba(192, 132, 252, 0.12) 50%, transparent 70%)'
@@ -327,7 +363,7 @@ export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme })
 
         {/* Orb 5: Center subtle breathing aura */}
         <div
-          className="absolute top-[35%] left-[40%] -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[180px] opacity-50 animate-pulse-glow transition-all duration-700"
+          className="absolute top-[35%] left-[40%] -translate-x-1/2 -translate-y-1/2 w-125 h-125 rounded-full blur-[180px] opacity-50 animate-pulse-glow transition-all duration-700"
           style={{
             background: isLight
               ? 'radial-gradient(circle, rgba(56, 189, 248, 0.20) 0%, transparent 70%)'

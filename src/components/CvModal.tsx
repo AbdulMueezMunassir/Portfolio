@@ -11,7 +11,6 @@ import {
   Github,
 } from 'lucide-react';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import { PERSONAL_INFO, REFERENCES } from '../data';
 
 interface CvModalProps {
@@ -93,10 +92,10 @@ export const CvModal: React.FC<CvModalProps> = ({ isOpen, onClose }) => {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
-  // High-fidelity client-side PDF generator using html2canvas & jsPDF
+  // Generate selectable PDF text directly so download does not depend on CSS canvas rendering.
   const handleDownloadPdf = async () => {
     const element = document.getElementById('cv-printable-document');
     if (!element || isDownloadingPdf) return;
@@ -105,39 +104,54 @@ export const CvModal: React.FC<CvModalProps> = ({ isOpen, onClose }) => {
     setPrintNotice(null);
 
     try {
-      // High-resolution canvas render
-      const canvas = await html2canvas(element, {
-        scale: 2, // 2x gives crisp 300dpi sharpness
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: '#ffffff',
-        logging: false,
-        windowWidth: 1024,
-      });
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 15;
+      const contentWidth = pageWidth - margin * 2;
+      let cursorY = margin;
+      let isFirstLine = true;
 
-      const imgWidth = 210; // A4 standard width in mm
-      const pageHeight = 297; // A4 standard height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
+      for (const rawLine of element.innerText.replace(/\r/g, '').split('\n')) {
+        const line = rawLine.trim().replace(/\u2022/g, '-');
+        if (!line) {
+          cursorY += 2;
+          continue;
+        }
 
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-        compress: true,
-      });
+        const isName = isFirstLine;
+        const isSection = !isName && line.length < 56 && /^[A-Z0-9][A-Z0-9 &/(),.'-]*$/.test(line);
+        const isRole = line.startsWith('Junior Software Engineer');
+        const fontSize = isName ? 20 : isSection ? 10 : isRole ? 11 : 9;
+        const lineHeight = isName ? 9 : isSection ? 6.5 : 4.5;
+        const wrappedLines = pdf.splitTextToSize(line, contentWidth);
 
-      const imgData = canvas.toDataURL('image/jpeg', 0.98);
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
-      heightLeft -= pageHeight;
+        if (cursorY + wrappedLines.length * lineHeight > pageHeight - margin - 8) {
+          pdf.addPage();
+          cursorY = margin;
+        }
 
-      // Handle multi-page documents seamlessly
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
-        heightLeft -= pageHeight;
+        pdf.setFont('helvetica', isName || isSection || isRole ? 'bold' : 'normal');
+        pdf.setFontSize(fontSize);
+        pdf.setTextColor(isName || isSection ? 30 : 30, isName || isSection ? 58 : 41, isName || isSection ? 138 : 59);
+        pdf.text(wrappedLines, margin, cursorY);
+        cursorY += wrappedLines.length * lineHeight;
+
+        if (isSection) {
+          pdf.setDrawColor(203, 213, 225);
+          pdf.line(margin, cursorY - 1, pageWidth - margin, cursorY - 1);
+          cursorY += 1;
+        }
+        isFirstLine = false;
+      }
+
+      const pageCount = pdf.getNumberOfPages();
+      for (let pageNumber = 1; pageNumber <= pageCount; pageNumber += 1) {
+        pdf.setPage(pageNumber);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(8);
+        pdf.setTextColor(100, 116, 139);
+        pdf.text(`Abdul Mueez | CV | ${pageNumber}/${pageCount}`, margin, pageHeight - 7);
       }
 
       pdf.save('Abdul_Mueez_CV.pdf');
@@ -146,105 +160,19 @@ export const CvModal: React.FC<CvModalProps> = ({ isOpen, onClose }) => {
     } catch (error) {
       console.error('PDF generation error, falling back to HTML resume download:', error);
       triggerHtmlResumeDownload();
+      setPrintNotice('PDF generation failed. An HTML version of your CV was downloaded instead.');
     } finally {
       setIsDownloadingPdf(false);
     }
   };
 
-  // Print handler with isolated iframe & browser fallback
   const handlePrint = () => {
-    const element = document.getElementById('cv-printable-document');
-    if (!element) {
+    try {
       window.print();
-      return;
+    } catch {
+      setPrintNotice('Printing is unavailable. Download the PDF instead.');
+      handleDownloadPdf();
     }
-
-    const printFrame = document.createElement('iframe');
-    printFrame.style.position = 'fixed';
-    printFrame.style.right = '0';
-    printFrame.style.bottom = '0';
-    printFrame.style.width = '0';
-    printFrame.style.height = '0';
-    printFrame.style.border = '0';
-    document.body.appendChild(printFrame);
-
-    const frameDoc = printFrame.contentWindow?.document;
-    if (!frameDoc) {
-      try {
-        window.print();
-      } catch {
-        handleDownloadPdf();
-      }
-      return;
-    }
-
-    frameDoc.open();
-    frameDoc.write(`
-      <!DOCTYPE html>
-      <html lang="en">
-        <head>
-          <meta charset="utf-8">
-          <title>Abdul Mueez - Curriculum Vitae</title>
-          <style>
-            @page { size: A4 portrait; margin: 12mm 15mm; }
-            body {
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-              color: #0f172a;
-              background: #ffffff;
-              margin: 0;
-              padding: 16px;
-              font-size: 10pt;
-              line-height: 1.4;
-            }
-            * { box-sizing: border-box; }
-            h1 { font-size: 20pt; margin: 0 0 2px 0; font-weight: 800; color: #1e3a8a; }
-            h2 {
-              font-size: 10.5pt;
-              font-weight: 700;
-              text-transform: uppercase;
-              letter-spacing: 0.04em;
-              border-bottom: 1.5px solid #cbd5e1;
-              padding-bottom: 2px;
-              margin: 12px 0 6px 0;
-              color: #1e3a8a;
-            }
-            p { margin: 0 0 4px 0; }
-            ul { margin: 3px 0 6px 18px; padding: 0; }
-            li { margin-bottom: 3px; font-size: 9.5pt; color: #1e293b; }
-            .tech-stack { font-style: italic; font-size: 9pt; color: #475569; margin-top: 2px; }
-            a { color: #1e3a8a; text-decoration: none; }
-            .cv-document { max-width: 100%; margin: 0 auto; }
-          </style>
-        </head>
-        <body>
-          ${element.innerHTML}
-        </body>
-      </html>
-    `);
-    frameDoc.close();
-
-    setTimeout(() => {
-      try {
-        printFrame.contentWindow?.focus();
-        printFrame.contentWindow?.print();
-      } catch (e) {
-        console.warn('Iframe print restricted:', e);
-        try {
-          window.print();
-        } catch {
-          setPrintNotice('Direct print restricted by sandbox. Downloading PDF instead!');
-          handleDownloadPdf();
-        }
-      } finally {
-        setTimeout(() => {
-          try {
-            document.body.removeChild(printFrame);
-          } catch {
-            // cleanup
-          }
-        }, 3000);
-      }
-    }, 350);
   };
 
   const handleCopyText = () => {
@@ -345,7 +273,7 @@ Mobile: +94 71 632 4516 | Email: kapilar@appsc.sab.ac.lk, kapila.tr@gmail.com
               onClick={handleDownloadPdf}
               disabled={isDownloadingPdf}
               id="cv-modal-download-pdf-btn"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-semibold shadow-md shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all cursor-pointer hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-linear-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-semibold shadow-md shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all cursor-pointer hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed"
               title="Download CV as a high-resolution A4 PDF document"
             >
               {isDownloadingPdf ? (
@@ -649,6 +577,69 @@ Mobile: +94 71 632 4516 | Email: kapilar@appsc.sab.ac.lk, kapila.tr@gmail.com
                   Technologies: Python, Pandas, NumPy, Scikit-learn, Streamlit
                 </p>
               </div>
+
+              {/* Project 5 */}
+              <div>
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="font-bold text-slate-950">
+                    FoodDelivery LK – Sri Lankan Food Delivery – Next.js
+                  </span>
+                  <a
+                    href="https://github.com/AbdulMueezMunassir/FoodDelivery-LK"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-[#1e3a8a] transition-colors shrink-0"
+                    title="View Source Repository"
+                  >
+                    <Github className="w-3 h-3" />
+                    <span>GitHub</span>
+                  </a>
+                </div>
+                <ul className="list-disc list-outside pl-4 text-slate-800 space-y-0.5 mt-0.5">
+                  <li>Built a Sri Lankan food-delivery app with restaurant discovery, cuisine browsing, and delivery-address search.</li>
+                  <li>Implemented customer and restaurant accounts with signed JWT authentication and protected routes.</li>
+                  <li>Modeled users, restaurants, and orders in PostgreSQL with Prisma.</li>
+                </ul>
+                <p className="text-[11px] text-slate-600 italic mt-0.5">
+                  Technologies: Next.js 14, TypeScript, PostgreSQL, Prisma, JWT, bcryptjs, Tailwind CSS
+                </p>
+              </div>
+
+              {/* Project 6 */}
+              <div>
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="font-bold text-slate-950">
+                    Task Tracker – Kanban Task Management – Next.js
+                  </span>
+                  <a
+                    href="https://github.com/AbdulMueezMunassir/task-tracker"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-[#1e3a8a] transition-colors shrink-0"
+                    title="View Source Repository"
+                  >
+                    <Github className="w-3 h-3" />
+                    <span>GitHub</span>
+                  </a>
+                </div>
+                <ul className="list-disc list-outside pl-4 text-slate-800 space-y-0.5 mt-0.5">
+                  <li>Built a responsive task manager with a three-column Kanban board, task CRUD, priority levels, and due dates.</li>
+                  <li>Added Supabase authentication, protected routes, dashboard analytics, and overdue-task detection.</li>
+                  <li>Designed a user-linked Prisma schema backed by PostgreSQL and added Sentry error monitoring.</li>
+                </ul>
+                <p className="text-[11px] text-slate-600 italic mt-0.5">
+                  Technologies: Next.js 16, TypeScript, Tailwind CSS v4, Supabase, PostgreSQL, Prisma 5, Zod, Sentry
+                </p>
+                <a
+                  href="https://task-tracker-tau-ruby.vercel.app/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-[#1e3a8a] transition-colors mt-0.5"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  <span>Live Demo</span>
+                </a>
+              </div>
             </div>
           </div>
 
@@ -712,7 +703,7 @@ Mobile: +94 71 632 4516 | Email: kapilar@appsc.sab.ac.lk, kapila.tr@gmail.com
             onClick={handleDownloadPdf}
             disabled={isDownloadingPdf}
             id="cv-modal-download-pdf-footer-btn"
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-semibold shadow-lg shadow-cyan-500/25 transition-all cursor-pointer hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-linear-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-semibold shadow-lg shadow-cyan-500/25 transition-all cursor-pointer hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed"
             title="Download CV as a high-resolution A4 PDF document"
           >
             {isDownloadingPdf ? (

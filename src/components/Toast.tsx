@@ -95,7 +95,7 @@ export const Toast: React.FC<ToastProps> = ({
         {/* Countdown progress bar */}
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
           <div
-            className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 transition-all duration-75 ease-linear"
+            className="h-full bg-linear-to-r from-emerald-400 to-cyan-400 transition-all duration-75 ease-linear"
             style={{ width: `${progress}%` }}
           />
         </div>

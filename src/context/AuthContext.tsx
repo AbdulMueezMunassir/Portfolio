@@ -1,13 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import {
-  User,
-  onAuthStateChanged,
-  signInWithPopup,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-} from 'firebase/auth';
-import { auth, googleProvider, OWNER_EMAIL } from '../lib/firebase';
+import type { User } from 'firebase/auth';
+import { scheduleWhenIdle } from '../lib/scheduleWhenIdle';
+
+const OWNER_EMAIL = 'abmueez593@gmail.com';
 
 interface AuthContextType {
   user: User | null;
@@ -27,29 +22,63 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
-      setLoading(false);
+    let active = true;
+    let unsubscribe: (() => void) | undefined;
+
+    const cancelScheduledLoad = scheduleWhenIdle(() => {
+      void Promise.all([import('firebase/auth'), import('../lib/firebase')])
+        .then(([firebaseAuth, firebaseClient]) => {
+          if (!active) return;
+          unsubscribe = firebaseAuth.onAuthStateChanged(firebaseClient.auth, (firebaseUser) => {
+            setUser(firebaseUser);
+            setLoading(false);
+          });
+        })
+        .catch((error: unknown) => {
+          console.warn('Firebase authentication is unavailable:', error);
+          setLoading(false);
+        });
     });
-    return () => unsubscribe();
+
+    return () => {
+      active = false;
+      cancelScheduledLoad();
+      unsubscribe?.();
+    };
   }, []);
 
   const isOwner = Boolean(user && user.email && user.email.toLowerCase() === OWNER_EMAIL.toLowerCase());
 
   const loginWithGoogle = async () => {
-    await signInWithPopup(auth, googleProvider);
+    const [firebaseAuth, firebaseClient] = await Promise.all([
+      import('firebase/auth'),
+      import('../lib/firebase'),
+    ]);
+    await firebaseAuth.signInWithPopup(firebaseClient.auth, firebaseClient.googleProvider);
   };
 
   const loginWithEmail = async (email: string, pass: string) => {
-    await signInWithEmailAndPassword(auth, email, pass);
+    const [firebaseAuth, firebaseClient] = await Promise.all([
+      import('firebase/auth'),
+      import('../lib/firebase'),
+    ]);
+    await firebaseAuth.signInWithEmailAndPassword(firebaseClient.auth, email, pass);
   };
 
   const signUpWithEmail = async (email: string, pass: string) => {
-    await createUserWithEmailAndPassword(auth, email, pass);
+    const [firebaseAuth, firebaseClient] = await Promise.all([
+      import('firebase/auth'),
+      import('../lib/firebase'),
+    ]);
+    await firebaseAuth.createUserWithEmailAndPassword(firebaseClient.auth, email, pass);
   };
 
   const logout = async () => {
-    await signOut(auth);
+    const [firebaseAuth, firebaseClient] = await Promise.all([
+      import('firebase/auth'),
+      import('../lib/firebase'),
+    ]);
+    await firebaseAuth.signOut(firebaseClient.auth);
   };
 
   return (

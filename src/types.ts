@@ -1,4 +1,4 @@
-export type ThemeMode = 'deep-midnight' | 'slate-blue' | 'clean-light';
+export type ThemeMode = 'deep-midnight' | 'clean-light';
 
 export type ProjectCategory = 'All' | 'Web Development' | 'Mobile' | 'UI/UX' | 'Machine Learning' | 'Desktop & Systems';
 

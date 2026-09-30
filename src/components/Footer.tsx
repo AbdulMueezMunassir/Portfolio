@@ -39,13 +39,13 @@ export const Footer: React.FC<FooterProps> = ({
       <div className="absolute bottom-0 right-1/4 w-[380px] h-[140px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none -z-10" />
 
       {/* Iridescent top hairline glow reflection */}
-      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-cyan-400/40 to-transparent" />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Main Floating Glassmorphic Container Card */}
         <div className="rounded-3xl p-6 sm:p-8 bg-slate-900/40 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] relative overflow-hidden group">
           {/* Subtle diagonal glass light streak */}
-          <div className="absolute -top-24 -left-24 w-72 h-72 bg-gradient-to-br from-white/10 via-white/5 to-transparent rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -top-24 -left-24 w-72 h-72 bg-linear-to-br from-white/10 via-white/5 to-transparent rounded-full blur-2xl pointer-events-none" />
 
           <div className="flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10">
             {/* Left: Avatar & Identity with Availability Indicator */}

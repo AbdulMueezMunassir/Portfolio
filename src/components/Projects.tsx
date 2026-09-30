@@ -30,12 +30,17 @@ import {
   Edit3,
   Trash2,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, type Variants } from 'motion/react';
 import { Project, ProjectCategory } from '../types';
-import { ProjectModal } from './ProjectModal';
-import { ProjectEditorModal } from './ProjectEditorModal';
 import { usePortfolioData } from '../context/PortfolioDataContext';
 import { useAuth } from '../context/AuthContext';
+
+const ProjectModal = React.lazy(() =>
+  import('./ProjectModal').then((module) => ({ default: module.ProjectModal }))
+);
+const ProjectEditorModal = React.lazy(() =>
+  import('./ProjectEditorModal').then((module) => ({ default: module.ProjectEditorModal }))
+);
 
 export interface TechBadgeConfig {
   icon: React.FC<{ className?: string }>;
@@ -279,7 +284,7 @@ export const Projects: React.FC = () => {
 
   const activeCategoryMeta = filterOptions.find((opt) => opt.id === activeCategory);
 
-  const cardVariants = {
+  const cardVariants: Variants = {
     hidden: {
       opacity: 0,
       y: 35,
@@ -326,11 +331,11 @@ export const Projects: React.FC = () => {
           decoding="async"
           className="w-full h-full object-cover object-top opacity-[0.08] dark:opacity-[0.12] filter contrast-125 transition-opacity duration-700"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[var(--bg-canvas)] via-transparent to-[var(--bg-canvas)]" />
+        <div className="absolute inset-0 bg-linear-to-b from-[var(--bg-canvas)] via-transparent to-[var(--bg-canvas)]" />
       </div>
 
       {/* Background radial ambient glow */}
-      <div className="absolute top-1/2 left-1/4 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-[140px] pointer-events-none -z-10" />
+      <div className="absolute top-1/2 left-1/4 w-100 h-100 bg-cyan-500/10 rounded-full blur-[140px] pointer-events-none -z-10" />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         
@@ -348,7 +353,7 @@ export const Projects: React.FC = () => {
               <span>Independent Engineering Portfolio</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Featured <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Projects</span>
+              Featured <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-700 to-blue-700 dark:from-cyan-400 dark:to-blue-400">Projects</span>
             </h2>
             <p className="mt-2 text-sm sm:text-base text-slate-400 max-w-xl">
               End-to-end applications demonstrating database schema modeling, resilient REST and WebSocket APIs, and polished reactive frontends.
@@ -364,7 +369,7 @@ export const Projects: React.FC = () => {
                   setIsEditorOpen(true);
                 }}
                 id="owner-add-project-btn"
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-xs font-semibold shadow-lg shadow-emerald-500/20 transition-all cursor-pointer whitespace-nowrap"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-linear-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-xs font-semibold shadow-lg shadow-emerald-500/20 transition-all cursor-pointer whitespace-nowrap"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Project</span>
@@ -469,7 +474,7 @@ export const Projects: React.FC = () => {
                 className="glass-card-interactive rounded-3xl p-6 flex flex-col justify-between group relative overflow-hidden"
               >
                 {/* Subtle top specular accent border */}
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r from-transparent via-cyan-400/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                 <div>
                 {/* Project Cover Image Banner */}
@@ -485,7 +490,7 @@ export const Projects: React.FC = () => {
                       loading="lazy"
                       className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-slate-950/20" />
+                    <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/40 to-slate-950/20" />
 
                     {/* Floating Badges on top of cover image */}
                     <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 z-10">
@@ -719,19 +724,27 @@ export const Projects: React.FC = () => {
       </div>
 
       {/* Detail Modal */}
-      <ProjectModal
-        project={selectedProject}
-        onClose={() => setSelectedProject(null)}
-      />
+      {selectedProject && (
+        <React.Suspense fallback={null}>
+          <ProjectModal
+            project={selectedProject}
+            onClose={() => setSelectedProject(null)}
+          />
+        </React.Suspense>
+      )}
 
       {/* Owner Project Editor Modal */}
-      <ProjectEditorModal
-        isOpen={isEditorOpen}
-        project={editingProject}
-        onClose={() => setIsEditorOpen(false)}
-        onSave={addOrUpdateProject}
-        onDelete={deleteProject}
-      />
+      {isEditorOpen && (
+        <React.Suspense fallback={null}>
+          <ProjectEditorModal
+            isOpen={isEditorOpen}
+            project={editingProject}
+            onClose={() => setIsEditorOpen(false)}
+            onSave={addOrUpdateProject}
+            onDelete={deleteProject}
+          />
+        </React.Suspense>
+      )}
     </section>
   );
 };

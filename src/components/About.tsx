@@ -62,7 +62,7 @@ export const About: React.FC = () => {
             <span>Profile & Engineering Approach</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            About <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Abdul Mueez</span>
+            About <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-700 to-blue-700 dark:from-cyan-400 dark:to-blue-400">Abdul Mueez</span>
           </h2>
         </div>
 
@@ -88,7 +88,7 @@ export const About: React.FC = () => {
                 </p>
 
                 <p className="mt-4 text-sm sm:text-base text-slate-300 leading-relaxed">
-                  I have built independent full-stack and systems projects across <strong className="text-cyan-300">Django & PostgreSQL</strong>, <strong className="text-cyan-300">MERN</strong> (React, Node, Express, MongoDB), <strong className="text-cyan-300">Next.js & TypeScript</strong>, <strong className="text-cyan-300">PENN</strong> (PostgreSQL, Express, Next.js, PayHere), and <strong className="text-cyan-300">Python Desktop & Machine Learning</strong>.
+                  I have built independent full-stack and systems projects across <strong className="text-cyan-700 dark:text-cyan-300">Django & PostgreSQL</strong>, <strong className="text-cyan-700 dark:text-cyan-300">MERN</strong> (React, Node, Express, MongoDB), <strong className="text-cyan-700 dark:text-cyan-300">Next.js & TypeScript</strong>, <strong className="text-cyan-700 dark:text-cyan-300">PENN</strong> (PostgreSQL, Express, Next.js, PayHere), and <strong className="text-cyan-700 dark:text-cyan-300">Python Desktop & Machine Learning</strong>.
                 </p>
               </div>
 
@@ -102,14 +102,14 @@ export const About: React.FC = () => {
                     href={PERSONAL_INFO.linkedin}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-300 hover:text-white transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-700 dark:text-sky-300 hover:text-sky-900 dark:hover:text-white transition-colors"
                   >
                     <Linkedin className="w-3.5 h-3.5 text-[#0A66C2]" />
                     <span>LinkedIn Profile</span>
                   </a>
                   <a
                     href="#contact"
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition-colors group/link"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-700 dark:text-cyan-300 hover:text-cyan-900 dark:hover:text-cyan-200 transition-colors group/link"
                   >
                     <span>Discuss an opportunity</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover/link:translate-x-1 transition-transform" />

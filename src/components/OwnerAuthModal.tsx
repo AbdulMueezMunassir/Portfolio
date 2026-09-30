@@ -450,7 +450,7 @@ export const OwnerAuthModal: React.FC<OwnerAuthModalProps> = ({ isOpen, onClose 
                   type="submit"
                   disabled={loading}
                   id="email-auth-submit-btn"
-                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-xs transition-all cursor-pointer shadow-lg shadow-cyan-500/20 disabled:opacity-50"
+                  className="w-full py-2.5 rounded-xl bg-linear-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-xs transition-all cursor-pointer shadow-lg shadow-cyan-500/20 disabled:opacity-50"
                 >
                   {loading ? 'Authenticating...' : isSignUp ? 'Create Owner Credentials' : 'Sign In'}
                 </button>

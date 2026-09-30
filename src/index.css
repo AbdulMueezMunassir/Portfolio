@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root,
   [data-theme="deep-midnight"] {
@@ -18,24 +20,6 @@
     --scrollbar-track: #030712;
     --scrollbar-thumb: #1e293b;
     --text-primary: #f1f5f9;
-  }
-
-  [data-theme="slate-blue"] {
-    --bg-canvas: #0b1528;
-    --bg-surface: #111e3b;
-    --bg-card: rgba(22, 36, 68, 0.70);
-    --bg-card-subtle: rgba(22, 36, 68, 0.50);
-    --border-subtle: rgba(147, 197, 253, 0.14);
-    --border-accent: rgba(96, 165, 250, 0.45);
-    --accent-glow: rgba(59, 130, 246, 0.22);
-    --accent-border: rgba(96, 165, 250, 0.4);
-    --ambient-1: rgba(30, 58, 138, 0.38);
-    --ambient-2: rgba(67, 56, 202, 0.24);
-    --ambient-3: rgba(14, 165, 233, 0.22);
-    --nav-bg: rgba(11, 21, 40, 0.82);
-    --scrollbar-track: #0b1528;
-    --scrollbar-thumb: #23385d;
-    --text-primary: #f8fafc;
   }
 
   [data-theme="clean-light"] {
@@ -60,6 +44,10 @@
     scroll-behavior: smooth;
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     transition: background-color 0.4s ease, color 0.4s ease;
+  }
+
+  section[id] {
+    scroll-margin-top: 6.5rem;
   }
 
   body {
@@ -318,6 +306,10 @@
   color: #0f172a !important;
 }
 
+[data-theme="clean-light"] a.text-white:not([class*="bg-"]) {
+  color: #0f172a !important;
+}
+
 /* Glass Panels & Cards in Light Mode */
 [data-theme="clean-light"] .glass-panel {
   background: rgba(255, 255, 255, 0.88) !important;
@@ -399,7 +391,7 @@
 
 [data-theme="clean-light"] input::placeholder,
 [data-theme="clean-light"] textarea::placeholder {
-  color: #94a3b8 !important;
+  color: #64748b !important;
 }
 
 /* Modal Backdrops in light mode */
@@ -474,5 +466,43 @@
     box-shadow: none !important;
     backdrop-filter: none !important;
     color: #0f172a !important;
+  }
+
+}
+/* ===== MOBILE HERO FIXES ===== */
+@media (max-width: 640px) {
+  /* Prevent horizontal overflow */
+  html, body {
+    overflow-x: hidden;
+  }
+
+  /* Hero CTA buttons full width */
+  .hero-cta-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .hero-cta-group > * {
+    width: 100%;
+  }
+
+  /* Prevent icon squeeze */
+  .hero-cta-group svg {
+    flex-shrink: 0;
+  }
+
+  /* Badge full width */
+  .hero-badge {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Touch targets minimum 40px */
+@media (hover: none) {
+  button, a {
+    min-height: 40px;
   }
 }

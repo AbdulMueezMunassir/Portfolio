@@ -1,17 +1,16 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import {
-  collection,
-  onSnapshot,
-  doc,
-  setDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-} from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import { Project, SkillCategory, ContactMessage } from '../types';
 import { PROJECTS as DEFAULT_PROJECTS, SKILL_CATEGORIES as DEFAULT_SKILLS } from '../data';
 import { useAuth } from './AuthContext';
+import { scheduleWhenIdle } from '../lib/scheduleWhenIdle';
+
+const loadFirestoreClient = async () => {
+  const [firestore, firebaseClient] = await Promise.all([
+    import('firebase/firestore'),
+    import('../lib/firebase'),
+  ]);
+  return { firestore, db: firebaseClient.db };
+};
 
 interface PortfolioDataContextType {
   projects: Project[];
@@ -49,111 +48,136 @@ export const PortfolioDataProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Subscribe to Projects collection
   useEffect(() => {
-    const unsub = onSnapshot(
-      collection(db, 'projects'),
-      (snapshot) => {
-        if (!snapshot.empty) {
-          const loadedProjects: Project[] = [];
-          snapshot.forEach((d) => {
-            // Exclude obsolete projects that are not in the CV
-            if (REMOVED_PROJECT_IDS.has(d.id)) {
-              if (isOwner) {
-                // Auto-clean remote obsolete docs
-                deleteDoc(doc(db, 'projects', d.id)).catch(() => {});
-              }
-              return;
+    let active = true;
+    let unsubscribe: (() => void) | undefined;
+
+    const cancelScheduledLoad = scheduleWhenIdle(() => {
+      void loadFirestoreClient()
+        .then(({ firestore, db }) => {
+        if (!active) return;
+        unsubscribe = firestore.onSnapshot(
+          firestore.collection(db, 'projects'),
+          (snapshot) => {
+            if (!snapshot.empty) {
+              const loadedProjects: Project[] = [];
+              snapshot.forEach((d) => {
+                if (REMOVED_PROJECT_IDS.has(d.id)) {
+                  if (isOwner) {
+                    firestore.deleteDoc(firestore.doc(db, 'projects', d.id)).catch(() => {});
+                  }
+                  return;
+                }
+
+                const data = d.data() as Partial<Project>;
+                const fallback = DEFAULT_PROJECTS.find((p) => p.id === d.id);
+                const resolvedGithubUrl = fallback?.githubUrl || data.githubUrl;
+                const resolvedCoverImage =
+                  d.id === 'aqua-market-nextjs' && fallback?.coverImage
+                    ? fallback.coverImage
+                    : data.coverImage || fallback?.coverImage;
+
+                if (isOwner && fallback?.githubUrl && data.githubUrl !== fallback.githubUrl) {
+                  firestore.setDoc(firestore.doc(db, 'projects', d.id), { githubUrl: fallback.githubUrl }, { merge: true }).catch(() => {});
+                }
+                if (isOwner && fallback?.coverImage && data.coverImage !== fallback.coverImage && d.id === 'aqua-market-nextjs') {
+                  firestore.setDoc(firestore.doc(db, 'projects', d.id), { coverImage: fallback.coverImage }, { merge: true }).catch(() => {});
+                }
+
+                loadedProjects.push({
+                  id: d.id,
+                  ...(fallback || {}),
+                  ...data,
+                  githubUrl: resolvedGithubUrl,
+                  coverImage: resolvedCoverImage,
+                } as Project);
+              });
+
+              DEFAULT_PROJECTS.forEach((defaultProj) => {
+                if (!loadedProjects.some((p) => p.id === defaultProj.id)) {
+                  loadedProjects.push(defaultProj);
+                }
+              });
+
+              loadedProjects.sort((a, b) => {
+                const indexA = DEFAULT_PROJECTS.findIndex((p) => p.id === a.id);
+                const indexB = DEFAULT_PROJECTS.findIndex((p) => p.id === b.id);
+                if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+                return 0;
+              });
+
+              setProjects(loadedProjects);
+            } else {
+              setProjects(DEFAULT_PROJECTS);
             }
-
-            const data = d.data() as Partial<Project>;
-            const fallback = DEFAULT_PROJECTS.find((p) => p.id === d.id);
-            const resolvedGithubUrl = fallback?.githubUrl || data.githubUrl;
-
-            const resolvedCoverImage =
-              d.id === 'aqua-market-nextjs' && fallback?.coverImage
-                ? fallback.coverImage
-                : data.coverImage || fallback?.coverImage;
-
-            if (isOwner && fallback?.githubUrl && data.githubUrl !== fallback.githubUrl) {
-              setDoc(doc(db, 'projects', d.id), { githubUrl: fallback.githubUrl }, { merge: true }).catch(() => {});
-            }
-            if (isOwner && fallback?.coverImage && data.coverImage !== fallback.coverImage && d.id === 'aqua-market-nextjs') {
-              setDoc(doc(db, 'projects', d.id), { coverImage: fallback.coverImage }, { merge: true }).catch(() => {});
-            }
-
-            loadedProjects.push({
-              id: d.id,
-              ...(fallback || {}),
-              ...data,
-              githubUrl: resolvedGithubUrl,
-              coverImage: resolvedCoverImage,
-            } as Project);
-          });
-
-          // Ensure all CV projects from DEFAULT_PROJECTS are included if not yet seeded
-          DEFAULT_PROJECTS.forEach((defaultProj) => {
-            if (!loadedProjects.some((p) => p.id === defaultProj.id)) {
-              loadedProjects.push(defaultProj);
-            }
-          });
-
-          // Maintain curated order matching DEFAULT_PROJECTS
-          loadedProjects.sort((a, b) => {
-            const indexA = DEFAULT_PROJECTS.findIndex((p) => p.id === a.id);
-            const indexB = DEFAULT_PROJECTS.findIndex((p) => p.id === b.id);
-            if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-            return 0;
-          });
-
-          setProjects(loadedProjects);
-        } else {
-          // Default fallback to CV projects
+            setLoading(false);
+          },
+          (err) => {
+            console.warn('Firestore projects listener fallback to local data:', err.message);
+            setProjects(DEFAULT_PROJECTS);
+            setLoading(false);
+          }
+        );
+        })
+        .catch((error: unknown) => {
+          console.warn('Firestore projects listener fallback to local data:', error);
           setProjects(DEFAULT_PROJECTS);
-        }
-        setLoading(false);
-      },
-      (err) => {
-        console.warn('Firestore projects listener fallback to local data:', err.message);
-        setProjects(DEFAULT_PROJECTS);
-        setLoading(false);
-      }
-    );
-    return () => unsub();
+          setLoading(false);
+        });
+    });
+
+    return () => {
+      active = false;
+      cancelScheduledLoad();
+      unsubscribe?.();
+    };
   }, [isOwner]);
 
   // Subscribe to Skills collection
   useEffect(() => {
-    const unsub = onSnapshot(
-      collection(db, 'skills'),
-      (snapshot) => {
-        if (!snapshot.empty) {
-          const loadedSkills: SkillCategory[] = [];
-          snapshot.forEach((d) => {
-            loadedSkills.push({ ...d.data() } as SkillCategory);
-          });
-          // Ensure all default categories are present if Firestore has older records
-          DEFAULT_SKILLS.forEach((defCat) => {
-            if (!loadedSkills.some((s) => s.name === defCat.name)) {
-              loadedSkills.push(defCat);
+    let active = true;
+    let unsubscribe: (() => void) | undefined;
+
+    const cancelScheduledLoad = scheduleWhenIdle(() => {
+      void loadFirestoreClient()
+        .then(({ firestore, db }) => {
+        if (!active) return;
+        unsubscribe = firestore.onSnapshot(
+          firestore.collection(db, 'skills'),
+          (snapshot) => {
+            if (!snapshot.empty) {
+              const loadedSkills: SkillCategory[] = [];
+              snapshot.forEach((d) => loadedSkills.push({ ...d.data() } as SkillCategory));
+              DEFAULT_SKILLS.forEach((defCat) => {
+                if (!loadedSkills.some((s) => s.name === defCat.name)) loadedSkills.push(defCat);
+              });
+              loadedSkills.sort((a, b) => {
+                const idxA = DEFAULT_SKILLS.findIndex((s) => s.name === a.name);
+                const idxB = DEFAULT_SKILLS.findIndex((s) => s.name === b.name);
+                if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                return 0;
+              });
+              setSkills(loadedSkills);
+            } else {
+              setSkills(DEFAULT_SKILLS);
             }
-          });
-          // Sort according to DEFAULT_SKILLS order
-          loadedSkills.sort((a, b) => {
-            const idxA = DEFAULT_SKILLS.findIndex((s) => s.name === a.name);
-            const idxB = DEFAULT_SKILLS.findIndex((s) => s.name === b.name);
-            if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-            return 0;
-          });
-          setSkills(loadedSkills);
-        } else {
+          },
+          (err) => {
+            console.warn('Firestore skills listener fallback to local data:', err.message);
+            setSkills(DEFAULT_SKILLS);
+          }
+        );
+        })
+        .catch((error: unknown) => {
+          console.warn('Firestore skills listener fallback to local data:', error);
           setSkills(DEFAULT_SKILLS);
-        }
-      },
-      (err) => {
-        console.warn('Firestore skills listener fallback to local data:', err.message);
-        setSkills(DEFAULT_SKILLS);
-      }
-    );
-    return () => unsub();
+        });
+    });
+
+    return () => {
+      active = false;
+      cancelScheduledLoad();
+      unsubscribe?.();
+    };
   }, []);
 
   // Subscribe to Messages collection (Owner only)
@@ -162,33 +186,44 @@ export const PortfolioDataProvider: React.FC<{ children: React.ReactNode }> = ({
       setMessages([]);
       return;
     }
-    const unsub = onSnapshot(
-      collection(db, 'messages'),
-      (snapshot) => {
-        const loadedMsgs: ContactMessage[] = [];
-        snapshot.forEach((d) => {
-          loadedMsgs.push({ id: d.id, ...d.data() } as ContactMessage);
-        });
-        // Sort newest first
-        loadedMsgs.sort((a, b) => {
-          const tA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const tB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-          return tB - tA;
-        });
-        setMessages(loadedMsgs);
-      },
-      (err) => {
-        console.warn('Messages listener warning:', err.message);
-      }
-    );
-    return () => unsub();
+    let active = true;
+    let unsubscribe: (() => void) | undefined;
+
+    const cancelScheduledLoad = scheduleWhenIdle(() => {
+      void loadFirestoreClient()
+        .then(({ firestore, db }) => {
+        if (!active) return;
+        unsubscribe = firestore.onSnapshot(
+          firestore.collection(db, 'messages'),
+          (snapshot) => {
+            const loadedMsgs: ContactMessage[] = [];
+            snapshot.forEach((d) => loadedMsgs.push({ id: d.id, ...d.data() } as ContactMessage));
+            loadedMsgs.sort((a, b) => {
+              const tA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+              const tB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+              return tB - tA;
+            });
+            setMessages(loadedMsgs);
+          },
+          (err) => console.warn('Messages listener warning:', err.message)
+        );
+        })
+        .catch((error: unknown) => console.warn('Messages listener warning:', error));
+    });
+
+    return () => {
+      active = false;
+      cancelScheduledLoad();
+      unsubscribe?.();
+    };
   }, [isOwner]);
 
   const unreadCount = messages.filter((m) => !m.read).length;
 
   // Send message from contact form
   const sendMessage = async (msg: { name: string; email: string; subject?: string; message: string }) => {
-    await addDoc(collection(db, 'messages'), {
+    const { firestore, db } = await loadFirestoreClient();
+    await firestore.addDoc(firestore.collection(db, 'messages'), {
       name: msg.name.trim(),
       email: msg.email.trim(),
       subject: (msg.subject || '').trim(),
@@ -200,28 +235,31 @@ export const PortfolioDataProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const markMessageAsRead = async (id: string, read: boolean = true) => {
     if (!isOwner) return;
-    await updateDoc(doc(db, 'messages', id), { read });
+    const { firestore, db } = await loadFirestoreClient();
+    await firestore.updateDoc(firestore.doc(db, 'messages', id), { read });
   };
 
   const deleteMessage = async (id: string) => {
     if (!isOwner) return;
-    await deleteDoc(doc(db, 'messages', id));
+    const { firestore, db } = await loadFirestoreClient();
+    await firestore.deleteDoc(firestore.doc(db, 'messages', id));
   };
 
   // Seed default data if owner wishes to populate Firestore with current resume items
   const seedInitialDataIfEmpty = async () => {
     if (!isOwner) throw new Error('Unauthorized: only owner can seed database');
+    const { firestore, db } = await loadFirestoreClient();
     // Remove obsolete projects
     for (const oldId of REMOVED_PROJECT_IDS) {
-      await deleteDoc(doc(db, 'projects', oldId)).catch(() => {});
+      await firestore.deleteDoc(firestore.doc(db, 'projects', oldId)).catch(() => {});
     }
     // Set current CV projects
     for (const p of DEFAULT_PROJECTS) {
-      await setDoc(doc(db, 'projects', p.id), p);
+      await firestore.setDoc(firestore.doc(db, 'projects', p.id), p);
     }
     for (const s of DEFAULT_SKILLS) {
       const docId = s.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
-      await setDoc(doc(db, 'skills', docId), s);
+      await firestore.setDoc(firestore.doc(db, 'skills', docId), s);
     }
   };
 
@@ -230,7 +268,8 @@ export const PortfolioDataProvider: React.FC<{ children: React.ReactNode }> = ({
       throw new Error('Unauthorized: Only the portfolio owner can edit or add projects.');
     }
     const cleanId = project.id || project.title.toLowerCase().replace(/[^a-z0-9]/g, '-');
-    await setDoc(doc(db, 'projects', cleanId), {
+    const { firestore, db } = await loadFirestoreClient();
+    await firestore.setDoc(firestore.doc(db, 'projects', cleanId), {
       ...project,
       id: cleanId,
     });
@@ -240,7 +279,8 @@ export const PortfolioDataProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!isOwner) {
       throw new Error('Unauthorized: Only the portfolio owner can delete projects.');
     }
-    await deleteDoc(doc(db, 'projects', projectId));
+    const { firestore, db } = await loadFirestoreClient();
+    await firestore.deleteDoc(firestore.doc(db, 'projects', projectId));
   };
 
   const addOrUpdateSkillCategory = async (category: SkillCategory, originalName?: string) => {
@@ -248,11 +288,12 @@ export const PortfolioDataProvider: React.FC<{ children: React.ReactNode }> = ({
       throw new Error('Unauthorized: Only the portfolio owner can edit or add skills.');
     }
     const docId = category.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const { firestore, db } = await loadFirestoreClient();
     if (originalName && originalName !== category.name) {
       const oldDocId = originalName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-      await deleteDoc(doc(db, 'skills', oldDocId)).catch(() => {});
+      await firestore.deleteDoc(firestore.doc(db, 'skills', oldDocId)).catch(() => {});
     }
-    await setDoc(doc(db, 'skills', docId), category);
+    await firestore.setDoc(firestore.doc(db, 'skills', docId), category);
   };
 
   const deleteSkillCategory = async (categoryName: string) => {
@@ -260,7 +301,8 @@ export const PortfolioDataProvider: React.FC<{ children: React.ReactNode }> = ({
       throw new Error('Unauthorized: Only the portfolio owner can delete skill categories.');
     }
     const docId = categoryName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-    await deleteDoc(doc(db, 'skills', docId));
+    const { firestore, db } = await loadFirestoreClient();
+    await firestore.deleteDoc(firestore.doc(db, 'skills', docId));
   };
 
   return (

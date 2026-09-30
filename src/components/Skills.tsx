@@ -24,8 +24,10 @@ import {
 import { SkillCategory } from '../types';
 import { usePortfolioData } from '../context/PortfolioDataContext';
 import { useAuth } from '../context/AuthContext';
-import { SkillEditorModal } from './SkillEditorModal';
-import { AiToolsShowcase } from './AiToolsShowcase';
+
+const SkillEditorModal = React.lazy(() =>
+  import('./SkillEditorModal').then((module) => ({ default: module.SkillEditorModal }))
+);
 
 const iconMap: Record<string, React.ReactNode> = {
   Layout: <Layout className="w-5 h-5 text-cyan-400" />,
@@ -135,8 +137,8 @@ export const Skills: React.FC = () => {
   return (
     <section id="skills" className="py-20 sm:py-28 relative overflow-hidden">
       {/* Glow ambient background lights */}
-      <div className="absolute top-1/4 right-1/4 w-[450px] h-[450px] bg-blue-600/10 rounded-full blur-[160px] pointer-events-none -z-10" />
-      <div className="absolute bottom-1/3 left-1/4 w-[400px] h-[400px] bg-cyan-600/10 rounded-full blur-[150px] pointer-events-none -z-10" />
+      <div className="absolute top-1/4 right-1/4 w-112.5 h-112.5 bg-blue-600/10 rounded-full blur-[160px] pointer-events-none -z-10" />
+      <div className="absolute bottom-1/3 left-1/4 w-100 h-100 bg-cyan-600/10 rounded-full blur-[150px] pointer-events-none -z-10" />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Section Header */}
@@ -146,13 +148,13 @@ export const Skills: React.FC = () => {
               <Layers className="w-3.5 h-3.5" />
               <span>Technical Competencies ({totalSkillsCount} total skills)</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Skills &{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400">
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-700 via-blue-700 to-indigo-700 dark:from-cyan-400 dark:via-blue-400 dark:to-indigo-400">
                 Expertise
               </span>
             </h2>
-            <p className="mt-3 text-sm sm:text-base text-slate-300 max-w-2xl leading-relaxed">
+            <p className="mt-3 text-sm sm:text-base text-slate-700 dark:text-slate-300 max-w-2xl leading-relaxed">
               Demonstrated capabilities across frontend frameworks, backend engines, relational &
               NoSQL databases, desktop hardware integrations, and applied machine learning.
             </p>
@@ -166,7 +168,7 @@ export const Skills: React.FC = () => {
                   setIsEditorOpen(true);
                 }}
                 id="owner-add-skill-category-btn"
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-xs font-semibold shadow-lg shadow-emerald-500/20 transition-all cursor-pointer whitespace-nowrap"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-linear-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-xs font-semibold shadow-lg shadow-emerald-500/20 transition-all cursor-pointer whitespace-nowrap"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Category</span>
@@ -199,7 +201,7 @@ export const Skills: React.FC = () => {
         <div className="mb-14">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-4 h-4 text-cyan-400" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
               Core Engineering Pillars & Architectures
             </h3>
           </div>
@@ -216,10 +218,10 @@ export const Skills: React.FC = () => {
                       {pillar.icon}
                     </div>
                     <div>
-                      <h4 className="text-base font-bold text-white group-hover:text-cyan-300 transition-colors">
+                      <h4 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors">
                         {pillar.title}
                       </h4>
-                      <p className="text-xs text-slate-400 font-medium">{pillar.role}</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">{pillar.role}</p>
                     </div>
                   </div>
                   <span
@@ -229,7 +231,7 @@ export const Skills: React.FC = () => {
                   </span>
                 </div>
 
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-4">
+                <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
                   {pillar.description}
                 </p>
 
@@ -247,9 +249,6 @@ export const Skills: React.FC = () => {
             ))}
           </div>
         </div>
-
-        {/* Dedicated AI Tools & LLMs Showcase Section */}
-        <AiToolsShowcase />
 
         {/* Domain Filter Tabs */}
         <div className="mb-8">
@@ -278,7 +277,7 @@ export const Skills: React.FC = () => {
               className="glass-card-interactive rounded-3xl p-6 relative overflow-hidden group flex flex-col justify-between"
             >
               {/* Top ambient color edge */}
-              <div className="absolute top-0 left-6 right-6 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:via-cyan-400/50 transition-all duration-300" />
+              <div className="absolute top-0 left-6 right-6 h-px bg-linear-to-r from-transparent via-white/20 to-transparent group-hover:via-cyan-400/50 transition-all duration-300" />
 
               <div>
                 {/* Category Header & Owner Controls */}
@@ -385,13 +384,17 @@ export const Skills: React.FC = () => {
       </div>
 
       {/* Owner Skill Category Editor Modal */}
-      <SkillEditorModal
-        isOpen={isEditorOpen}
-        category={editingCategory}
-        onClose={() => setIsEditorOpen(false)}
-        onSave={addOrUpdateSkillCategory}
-        onDelete={deleteSkillCategory}
-      />
+      {isEditorOpen && (
+        <React.Suspense fallback={null}>
+          <SkillEditorModal
+            isOpen={isEditorOpen}
+            category={editingCategory}
+            onClose={() => setIsEditorOpen(false)}
+            onSave={addOrUpdateSkillCategory}
+            onDelete={deleteSkillCategory}
+          />
+        </React.Suspense>
+      )}
     </section>
   );
 };

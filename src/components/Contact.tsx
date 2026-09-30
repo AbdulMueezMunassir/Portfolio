@@ -9,7 +9,6 @@ import {
   Linkedin,
   Github,
   MessageSquare,
-  MessageCircle,
   Sparkles,
   ExternalLink,
   Loader2,
@@ -18,6 +17,22 @@ import {
 import { PERSONAL_INFO } from '../data';
 import { usePortfolioData } from '../context/PortfolioDataContext';
 import { Toast } from './Toast';
+import { WhatsAppIcon } from './WhatsAppIcon.tsx';
+
+const withTimeout = <T,>(promise: Promise<T>, timeoutMs: number) =>
+  new Promise<T>((resolve, reject) => {
+    const timeoutId = window.setTimeout(() => reject(new Error('Message delivery timed out')), timeoutMs);
+    promise.then(
+      (value) => {
+        window.clearTimeout(timeoutId);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(timeoutId);
+        reject(error);
+      }
+    );
+  });
 
 export const Contact: React.FC = () => {
   const { sendMessage } = usePortfolioData();
@@ -29,6 +44,8 @@ export const Contact: React.FC = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submissionChannel, setSubmissionChannel] = useState<'email' | 'inbox' | null>(null);
+  const [submissionError, setSubmissionError] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [lastSenderName, setLastSenderName] = useState('');
   const [copiedType, setCopiedType] = useState<string | null>(null);
@@ -49,58 +66,49 @@ export const Contact: React.FC = () => {
     const messageSubject = formData.subject.trim() || `Portfolio Inquiry from ${sender}`;
 
     setIsSubmitting(true);
+    setSubmissionError('');
 
     try {
-      // 1. Send direct email to abmueez593@gmail.com via FormSubmit AJAX service
-      const emailPromise = fetch('https://formsubmit.co/ajax/abmueez593@gmail.com', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({
+      const submissionChannel = await Promise.any([
+        withTimeout(fetch('https://formsubmit.co/ajax/abmueez593@gmail.com', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            name: sender,
+            email: senderEmail,
+            _subject: `[Portfolio Inquiry] ${messageSubject} - from ${sender}`,
+            message: messageBody,
+            _replyto: senderEmail,
+            _template: 'table',
+            _captcha: 'false',
+          }),
+        }).then(async (response) => {
+          if (!response.ok) throw new Error(`Email service returned ${response.status}`);
+          const result = await response.json();
+          if (result.success === false || result.success === 'false') {
+            throw new Error('Email service did not accept the message');
+          }
+          return 'email' as const;
+        }), 10000),
+        withTimeout(sendMessage({
           name: sender,
           email: senderEmail,
-          _subject: `[Portfolio Inquiry] ${messageSubject} - from ${sender}`,
+          subject: messageSubject,
           message: messageBody,
-          _replyto: senderEmail,
-          _template: 'table',
-          _captcha: 'false',
-        }),
-      }).catch((err) => {
-        console.warn('FormSubmit service network warning:', err);
-        return null;
-      });
+        }).then(() => 'inbox' as const), 10000),
+      ]);
 
-      // 2. Also record in Firestore as permanent backup
-      const dbPromise = sendMessage({
-        name: sender,
-        email: senderEmail,
-        subject: messageSubject,
-        message: messageBody,
-      }).catch((err) => {
-        console.warn('Database backup warning:', err);
-        return null;
-      });
-
-      await Promise.allSettled([emailPromise, dbPromise]);
-
-      // 3. Trigger success toast and state
       setLastSenderName(sender);
+      setSubmissionChannel(submissionChannel);
       setShowToast(true);
       setSubmitted(true);
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (err) {
       console.error('Contact submission error:', err);
-      // Fallback: open mailto directly to abmueez593@gmail.com
-      const subjectEncoded = encodeURIComponent(messageSubject);
-      const bodyEncoded = encodeURIComponent(
-        `Hello Abdul Mueez,\n\nName: ${sender}\nEmail: ${senderEmail}\n\nMessage:\n${messageBody}`
-      );
-      window.location.href = `mailto:abmueez593@gmail.com?subject=${subjectEncoded}&body=${bodyEncoded}`;
-      setLastSenderName(sender);
-      setShowToast(true);
-      setSubmitted(true);
+      setSubmissionError('Your message could not be sent. Please use email or WhatsApp instead.');
     } finally {
       setIsSubmitting(false);
     }
@@ -109,7 +117,7 @@ export const Contact: React.FC = () => {
   return (
     <section id="contact" className="py-20 relative overflow-hidden">
       {/* Background radial glow */}
-      <div className="absolute bottom-10 left-1/3 w-[450px] h-[450px] bg-cyan-500/10 rounded-full blur-[160px] pointer-events-none -z-10" />
+      <div className="absolute bottom-10 left-1/3 w-112.5 h-112.5 bg-cyan-500/10 rounded-full blur-[160px] pointer-events-none -z-10" />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         
@@ -120,7 +128,7 @@ export const Contact: React.FC = () => {
             <span>Direct Inquiries & Hiring</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Let's <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Connect</span>
+            Let's <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-700 to-blue-700 dark:from-cyan-400 dark:to-blue-400">Connect</span>
           </h2>
           <p className="mt-2 text-sm sm:text-base text-slate-400">
             Currently open to Junior Software Engineer, Full-Stack Developer, and Associate engineering roles.
@@ -143,7 +151,7 @@ export const Contact: React.FC = () => {
                     <p className="text-xs font-medium text-slate-400">Email Address</p>
                     <a
                       href={`mailto:${PERSONAL_INFO.email}`}
-                      className="text-sm font-semibold text-white group-hover:text-cyan-300 transition-colors"
+                      className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors"
                     >
                       {PERSONAL_INFO.email}
                     </a>
@@ -175,18 +183,18 @@ export const Contact: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-3 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-[#25D366] group-hover:scale-110 transition-transform">
-                    <MessageCircle className="w-5 h-5" />
+                    <WhatsAppIcon className="w-5 h-5" />
                   </div>
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <p className="text-xs font-semibold text-emerald-400">WhatsApp (Instant Chat)</p>
+                      <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">WhatsApp (Instant Chat)</p>
                       <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="Available for chat" />
                     </div>
                     <a
                       href={`${PERSONAL_INFO.whatsapp}?text=${encodeURIComponent('Hi Abdul Mueez, I saw your portfolio and would like to connect with you.')}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors font-mono"
+                      className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors font-mono"
                     >
                       {PERSONAL_INFO.phone}
                     </a>
@@ -200,7 +208,7 @@ export const Contact: React.FC = () => {
                   className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-[#25D366] text-emerald-300 hover:text-white border border-emerald-500/40 text-xs font-semibold transition-all shadow-md shadow-emerald-950/40 cursor-pointer"
                   id="direct-whatsapp-card-btn"
                 >
-                  <MessageCircle className="w-3.5 h-3.5" />
+                  <WhatsAppIcon className="w-3.5 h-3.5" />
                   <span>Chat</span>
                 </a>
               </div>
@@ -217,7 +225,7 @@ export const Contact: React.FC = () => {
                     <p className="text-xs font-medium text-slate-400">Direct Phone Call</p>
                     <a
                       href={`tel:${PERSONAL_INFO.phone}`}
-                      className="text-sm font-semibold text-white group-hover:text-cyan-300 transition-colors"
+                      className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors"
                     >
                       {PERSONAL_INFO.phone}
                     </a>
@@ -305,7 +313,7 @@ export const Contact: React.FC = () => {
                 Send a Direct Message
               </h3>
               <p className="text-xs sm:text-sm text-slate-400 mb-6">
-                Fill out the form below to initiate an email to Abdul Mueez immediately.
+                Send Abdul a message by email or through the portfolio inbox.
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -368,10 +376,12 @@ export const Contact: React.FC = () => {
                       <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                       <div>
                         <p className="text-xs sm:text-sm font-semibold text-white">
-                          Message Emailed Successfully!
+                          {submissionChannel === 'email' ? 'Message sent successfully!' : 'Message saved successfully!'}
                         </p>
                         <p className="text-xs text-emerald-300/90 mt-0.5">
-                          Your message has been emailed directly to Abdul Mueez at <strong className="text-white">abmueez593@gmail.com</strong>. He will reply to your email address promptly.
+                          {submissionChannel === 'email'
+                            ? 'Your message was sent to Abdul Mueez. He can reply to the email address you provided.'
+                            : 'Your message is saved in Abdul Mueez’s portfolio inbox. Email delivery is temporarily unavailable.'}
                         </p>
                       </div>
                     </div>
@@ -382,7 +392,7 @@ export const Contact: React.FC = () => {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 text-emerald-300 hover:text-emerald-200 font-medium"
                       >
-                        <MessageCircle className="w-3.5 h-3.5" />
+                        <WhatsAppIcon className="w-3.5 h-3.5" />
                         <span>Follow up on WhatsApp</span>
                       </a>
                       <span className="text-slate-500">•</span>
@@ -405,11 +415,22 @@ export const Contact: React.FC = () => {
                   </div>
                 ) : (
                   <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    {submissionError && (
+                      <div className="w-full rounded-xl border border-rose-500/30 bg-rose-950/30 p-3 text-xs text-rose-200 sm:order-3">
+                        <p>{submissionError}</p>
+                        <a
+                          className="mt-2 inline-flex text-rose-100 underline"
+                          href={`mailto:${PERSONAL_INFO.email}?subject=${encodeURIComponent(formData.subject || 'Portfolio inquiry')}&body=${encodeURIComponent(`Name: ${formData.name}\nEmail: ${formData.email}\n\n${formData.message}`)}`}
+                        >
+                          Open your email app
+                        </a>
+                      </div>
+                    )}
                     <button
                       type="submit"
                       id="submit-contact-form-btn"
                       disabled={isSubmitting}
-                      className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-300 cursor-pointer active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-linear-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-300 cursor-pointer active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {isSubmitting ? (
                         <>
@@ -435,7 +456,7 @@ export const Contact: React.FC = () => {
                       className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-500/15 hover:bg-[#25D366] text-emerald-300 hover:text-white border border-emerald-500/30 text-xs sm:text-sm font-semibold transition-all shadow-md shadow-emerald-950/30 hover:shadow-emerald-500/30 cursor-pointer active:scale-95"
                       id="whatsapp-direct-submit-btn"
                     >
-                      <MessageCircle className="w-4 h-4" />
+                      <WhatsAppIcon className="w-4 h-4" />
                       <span>Direct Message on WhatsApp</span>
                     </a>
                   </div>
