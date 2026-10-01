@@ -95,7 +95,7 @@ export const About: React.FC = () => {
               <div className="mt-8 pt-6 border-t border-white/10 flex flex-wrap gap-4 items-center justify-between">
                 <div className="flex items-center gap-2 text-xs text-slate-300">
                   <span className="w-2 h-2 rounded-full bg-cyan-400" />
-                  <span>Colombo, Sri Lanka (UTC+5:30)</span>
+                  <span>Beruwala, Sri Lanka (UTC+5:30)</span>
                 </div>
                 <div className="flex items-center gap-4">
                   <a

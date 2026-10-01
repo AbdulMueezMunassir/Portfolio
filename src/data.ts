@@ -4,7 +4,7 @@ export const PERSONAL_INFO = {
   name: 'Abdul Mueez',
   title: 'Junior Software Engineer | Full-Stack Developer',
   tagline: 'Crafting robust end-to-end web applications with clean architecture, real-time interactivity, and data-driven intelligence.',
-  location: 'Colombo, Sri Lanka',
+  location: 'Beruwala, Sri Lanka',
   phone: '+94 76 172 2165',
   email: 'abmueez593@gmail.com',
   github: 'https://github.com/AbdulMueezMunassir',
@@ -12,9 +12,9 @@ export const PERSONAL_INFO = {
   whatsapp: 'https://wa.me/94761722165',
   avatarUrl: '/avatar.png',
   profileSummary:
-    'Final-year Computer Science undergraduate (BSc Hons, Sabaragamuwa University of Sri Lanka) with hands-on full-stack development experience from an internship at Hameedia and independent projects across the MERN/MENN stacks, Angular, and applied machine learning. Comfortable owning a feature end-to-end – from database schema and REST APIs to responsive, real-time frontends – using PHP, MySQL, Node.js, Express, MongoDB, React and Angular. Recently extended this into data-driven applications with Python and Scikit-learn, and cloud/DevOps tooling with AWS and Docker. Looking for a junior software engineering role to keep building practical, scalable products.',
+    'Computer Science undergraduate (BSc Hons, Sabaragamuwa University of Sri Lanka) with hands-on full-stack development experience from an internship at Hameedia and independent projects across Next.js, the MERN/MENN/PENN stacks, and applied machine learning. Comfortable owning a feature end-to-end, from database schema and REST APIs to responsive, real-time frontends, using TypeScript, PHP, MySQL, PostgreSQL, Prisma, Node.js, Express, MongoDB, React and Angular. Recently extended this into authentication, error monitoring, and data-driven applications with Supabase, Sentry, Python and Scikit-learn, plus cloud/DevOps tooling with AWS and Docker. Looking for a junior software engineering role to keep building practical, scalable products.',
   status: 'Open to Junior Software Engineer & Full-Stack Developer opportunities',
-  availability: 'Available Immediately / Full-time & Hybrid (Colombo)',
+  availability: 'Available Immediately / Full-time & Hybrid (Beruwala)',
 };
 
 export const PROJECTS: Project[] = [

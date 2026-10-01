@@ -52,7 +52,7 @@ export default function Hero({ onOpenCv, avatarUrl }: HeroProps) {
             {/* Availability Badge — FULL WIDTH on mobile */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs sm:text-sm font-medium mb-5 sm:mb-6 w-full sm:w-auto justify-center sm:justify-start">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-              <span className="truncate">Available in Colombo &amp; Remote</span>
+              <span className="truncate">Available in Beruwala &amp; Remote</span>
             </div>
 
             {/* Name — responsive font */}
@@ -91,7 +91,7 @@ export default function Hero({ onOpenCv, avatarUrl }: HeroProps) {
             <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-3 mb-7">
               <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/60 dark:bg-slate-900/70 border border-slate-200/70 dark:border-white/10 text-sm text-slate-700 dark:text-slate-200 w-full sm:w-auto">
                 <MapPin className="w-4 h-4 text-sky-500 shrink-0" />
-                <span>Colombo, Sri Lanka</span>
+                <span>Beruwala, Sri Lanka</span>
               </div>
 
               <button
