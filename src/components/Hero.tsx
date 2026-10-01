@@ -52,7 +52,7 @@ export default function Hero({ onOpenCv, avatarUrl }: HeroProps) {
             {/* Availability Badge — FULL WIDTH on mobile */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs sm:text-sm font-medium mb-5 sm:mb-6 w-full sm:w-auto justify-center sm:justify-start">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-              <span className="truncate">Available in Beruwala &amp; Remote</span>
+              <span className="truncate">Available in Colombo &amp; Remote</span>
             </div>
 
             {/* Name — responsive font */}
