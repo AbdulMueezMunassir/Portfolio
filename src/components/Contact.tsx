@@ -56,7 +56,7 @@ export const Contact: React.FC = () => {
     setTimeout(() => setCopiedType(null), 2500);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) return;
 
@@ -68,13 +68,24 @@ export const Contact: React.FC = () => {
     setIsSubmitting(true);
     setSubmissionError('');
 
+    // Backup copy in Firestore. It never blocks the form or decides success.
+    withTimeout(
+      sendMessage({
+        name: sender,
+        email: senderEmail,
+        subject: messageSubject,
+        message: messageBody,
+      }),
+      10000
+    ).catch((err) => console.warn('Backup save failed:', err));
+
     try {
-      const submissionChannel = await Promise.any([
-        withTimeout(fetch('https://formsubmit.co/ajax/abmueez593@gmail.com', {
+      const response = await withTimeout(
+        fetch('https://formsubmit.co/ajax/abmueez593@gmail.com', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
+            Accept: 'application/json',
           },
           body: JSON.stringify({
             name: sender,
@@ -85,30 +96,26 @@ export const Contact: React.FC = () => {
             _template: 'table',
             _captcha: 'false',
           }),
-        }).then(async (response) => {
-          if (!response.ok) throw new Error(`Email service returned ${response.status}`);
-          const result = await response.json();
-          if (result.success === false || result.success === 'false') {
-            throw new Error('Email service did not accept the message');
-          }
-          return 'email' as const;
-        }), 10000),
-        withTimeout(sendMessage({
-          name: sender,
-          email: senderEmail,
-          subject: messageSubject,
-          message: messageBody,
-        }).then(() => 'inbox' as const), 10000),
-      ]);
+        }),
+        10000
+      );
+
+      if (!response.ok) throw new Error(`Email service returned ${response.status}`);
+      const result = await response.json();
+      if (result.success === false || result.success === 'false') {
+        throw new Error(result.message || 'Email service did not accept the message');
+      }
 
       setLastSenderName(sender);
-      setSubmissionChannel(submissionChannel);
+      setSubmissionChannel('email');
       setShowToast(true);
       setSubmitted(true);
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (err) {
       console.error('Contact submission error:', err);
-      setSubmissionError('Your message could not be sent. Please use email or WhatsApp instead.');
+      setSubmissionError(
+        'Your message could not be emailed right now. Please email me directly or use WhatsApp instead.'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -313,7 +320,7 @@ export const Contact: React.FC = () => {
                 Send a Direct Message
               </h3>
               <p className="text-xs sm:text-sm text-slate-400 mb-6">
-                Send Abdul a message by email or through the portfolio inbox.
+                Send Abdul a message by email, or reach out directly on WhatsApp.
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-4">
